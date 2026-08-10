@@ -1,0 +1,348 @@
+/*
+ * 8899_Design_Token.css
+ * 从 8899 前端工程提取的全局 UI 规范变量
+ * 来源: global.css + review-design.css + global-ui-rules.css + professional-typography.css + ui-kit.scss
+ * 生成日期: 2026-07-07
+ */
+
+/* ═══════════════════════════════════════════════════════
+ * 1. 颜色系统
+ * ═══════════════════════════════════════════════════════ */
+
+:root {
+  /* ── 涨跌色（全站单一色号，铁律） ── */
+  --stock-up: #ff2d2d;                /* 涨红 - 唯一 */
+  --stock-down: #16b957;              /* 跌绿 - 唯一 */
+  --stock-flat: #909399;              /* 平盘灰 */
+  --stock-danger: #ff2d2d;            /* 危险=涨红 */
+  --stock-warning: #f59e0b;           /* 警告橙 */
+  --stock-primary: #2563eb;           /* 主蓝 (候选/CTA/关注) */
+  --stock-primary-hover: #1e3a8a;     /* 主蓝-hover */
+  --stock-primary-soft: rgba(37, 99, 235, 0.1); /* 主蓝-浅底 */
+
+  /* ── Review 主题色 (dark 默认) ── */
+  --review-red: #ff2d2d;
+  --review-red-soft: #7f0e0e;
+  --review-red-tint: rgba(255, 45, 45, .12);
+  --review-green: #16b957;
+  --review-green-soft: #0f7a3a;
+  --review-green-tint: rgba(22, 185, 87, .12);
+  --review-blue: #2563eb;
+  --review-blue-soft: #1e3a8a;
+  --review-blue-tint: rgba(37, 99, 235, .12);
+  --review-cyan: #38bdf8;
+  --review-cyan-tint: rgba(56, 189, 248, .12);
+  --review-orange: #f59e0b;
+  --review-orange-soft: #78350f;
+  --review-purple: #a78bfa;
+  --review-accent: #d6a84f;           /* 主线金 */
+  --review-accent-soft: rgba(214, 168, 79, .12);
+
+  /* ── 语义别名 ── */
+  --review-profit: var(--review-red);
+  --review-profit-soft: var(--review-red-tint);
+  --review-loss: var(--review-green);
+  --review-loss-soft: var(--review-green-tint);
+  --review-info: var(--review-cyan);
+  --review-info-soft: var(--review-cyan-tint);
+
+  /* ── 业务语义色 (ui-kit) ── */
+  --rv-mainline: var(--review-accent);        /* 主线金 */
+  --rv-mainline-soft: var(--review-accent-soft);
+  --rv-risk: var(--review-orange);            /* 风险橙 */
+  --rv-risk-soft: var(--review-orange-soft);
+  --rv-limit-up: var(--review-red);           /* 涨停红 */
+  --rv-limit-up-soft: rgba(255, 45, 45, .14);
+  --rv-zhaban: #fb923c;                       /* 炸板橙红 */
+  --rv-zhaban-soft: rgba(251, 146, 60, .16);
+  --rv-lianban: #e11d48;                      /* 连板深红 */
+  --rv-up: var(--review-profit);
+  --rv-down: var(--review-loss);
+  --rv-info: var(--review-info);
+}
+
+/* ═══════════════════════════════════════════════════════
+ * 2. 背景色 (4 套主题)
+ * ═══════════════════════════════════════════════════════ */
+
+/* dark 深蓝灰 */
+:root,
+:root[data-review-theme="dark"] {
+  --bg-color: #162238;
+  --review-bg: #162238;
+  --review-panel: transparent;
+  --review-panel-2: transparent;
+  --review-card: rgba(30, 42, 68, 0.98);
+  --review-bg-soft: #1a2540;
+  --review-line: #3d4d6e;
+  --review-text: #ffffff;
+  --review-muted: #cbd5e1;
+  --review-text-strong: #ffffff;
+  --review-text-faint: #b8c5d6;
+  --review-surface: var(--review-card);
+  --review-surface-solid: var(--review-panel);
+  --review-surface-raised: var(--review-panel-2);
+  --review-border: var(--review-line);
+  --review-glow-a: color-mix(in srgb, var(--review-red) 10%, transparent);
+  --review-glow-b: color-mix(in srgb, var(--review-blue) 9%, transparent);
+  --stock-bg-page: #162238;
+  --stock-bg-card: transparent;
+  --stock-bg-elevated: rgba(255, 255, 255, .04);
+  --stock-border: rgba(255, 255, 255, .12);
+  --stock-text-primary: #ffffff;
+  --stock-text-secondary: #cbd5e1;
+  --stock-text-muted: #cbd5e1;
+}
+
+/* paper 米色 */
+:root[data-review-theme="paper"] {
+  --bg-color: #f6efe3;
+  --review-bg: #f6efe3;
+  --review-panel: #fffaf2;
+  --review-panel-2: #fff4df;
+  --review-card: rgba(255, 250, 242, .94);
+  --review-line: rgba(126, 88, 37, .22);
+  --review-text: #172033;
+  --review-muted: #4b5563;
+  --review-text-strong: #101827;
+  --review-text-faint: #6b7280;
+  --review-accent: #9a6b16;
+  --stock-bg-page: #f6efe3;
+  --stock-bg-card: rgba(255, 250, 242, .8);
+  --stock-bg-elevated: rgba(255, 244, 223, .9);
+  --stock-border: rgba(126, 88, 37, .22);
+  --stock-text-primary: #172033;
+  --stock-text-secondary: #8a7359;
+  --stock-text-muted: #8a7359;
+}
+
+/* ocean 海蓝 */
+:root[data-review-theme="ocean"] {
+  --bg-color: #e8f4fb;
+  --review-bg: #e8f4fb;
+  --review-panel: #f8fcff;
+  --review-panel-2: #e0f2fe;
+  --review-card: rgba(248, 252, 255, .94);
+  --review-line: rgba(14, 116, 144, .20);
+  --review-text: #0f2638;
+  --review-muted: #94a3b8;
+  --review-text-strong: #061826;
+  --review-text-faint: #94a3b8;
+  --review-accent: #0e7490;
+  --stock-bg-page: #e8f4fb;
+  --stock-bg-card: rgba(248, 252, 255, .8);
+  --stock-bg-elevated: rgba(224, 242, 254, .9);
+  --stock-border: rgba(14, 116, 144, .20);
+  --stock-text-primary: #0f2638;
+  --stock-text-secondary: #94a3b8;
+  --stock-text-muted: #94a3b8;
+}
+
+/* midnight 紫夜 */
+:root[data-review-theme="midnight"] {
+  --bg-color: #12111f;
+  --review-bg: #12111f;
+  --review-panel: #1b1a2e;
+  --review-panel-2: #25233c;
+  --review-card: rgba(27, 26, 46, .88);
+  --review-line: #373454;
+  --review-text: #f2f0ff;
+  --review-muted: #a7a2c8;
+  --review-text-strong: #ffffff;
+  --review-text-faint: #817aa8;
+  --review-accent: #d6a84f;
+  --stock-bg-page: #12111f;
+  --stock-bg-card: transparent;
+  --stock-bg-elevated: rgba(255, 255, 255, .04);
+  --stock-border: rgba(255, 255, 255, .12);
+  --stock-text-primary: #ffffff;
+  --stock-text-secondary: #cbd5e1;
+  --stock-text-muted: #cbd5e1;
+}
+
+/* ═══════════════════════════════════════════════════════
+ * 3. 圆角
+ * ═══════════════════════════════════════════════════════ */
+:root {
+  --review-radius: 14px;              /* 卡片主圆角 */
+  --rv-radius: 14px;
+  --rv-radius-sm: 10px;               /* 小卡片/按钮 */
+}
+
+/* ═══════════════════════════════════════════════════════
+ * 4. 阴影
+ * ═══════════════════════════════════════════════════════ */
+:root {
+  --review-shadow: 0 14px 38px rgba(0, 0, 0, .28);
+  --rv-shadow-1: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --rv-shadow-2: 0 4px 14px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.06);
+  --rv-shadow-3: 0 14px 38px rgba(0,0,0,.18);
+  --rv-shadow-hover: 0 8px 24px rgba(0,0,0,.14);
+}
+:root[data-review-theme="dark"],
+:root[data-review-theme="midnight"] {
+  --rv-shadow-1: 0 1px 3px rgba(0,0,0,.4);
+  --rv-shadow-2: 0 4px 16px rgba(0,0,0,.5);
+  --rv-shadow-hover: 0 8px 28px rgba(0,0,0,.55);
+}
+
+/* ═══════════════════════════════════════════════════════
+ * 5. 边框
+ * ═══════════════════════════════════════════════════════ */
+:root {
+  --review-line: #3d4d6e;             /* dark 主题边框 */
+  --stock-border: rgba(255, 255, 255, .12);
+}
+
+/* ═══════════════════════════════════════════════════════
+ * 6. 字号规范 (professional-typography.css)
+ * ═══════════════════════════════════════════════════════ */
+:root {
+  --fs-h1: 22px;                      /* 页面主标题 (铁律: 不要 26/28/30/34) */
+  --fs-h2: 18px;                      /* 二级标题 */
+  --fs-h3: 15px;                      /* 三级标题 */
+  --fs-body: 13px;                    /* 正文 */
+  --fs-caption: 12px;                 /* 辅助说明 */
+  --fs-tag: 11px;                     /* 标签 */
+  --fs-kpi: 24px;                     /* KPI 大数字 (铁律: ≤24px) */
+  --fs-kpi-lg: 28px;                  /* 强调 KPI */
+
+  /* 字重 */
+  --fw-black: 950;
+  --fw-bold: 700;
+  --fw-medium: 600;
+  --fw-normal: 500;
+
+  /* 行高 */
+  --lh-tight: 1.25;
+  --lh-normal: 1.5;
+  --lh-loose: 1.7;
+
+  /* 字母间距 */
+  --ls-tabular: 0.02em;
+}
+
+/* ═══════════════════════════════════════════════════════
+ * 7. 间距系统 (ui-kit.scss)
+ * ═══════════════════════════════════════════════════════ */
+:root {
+  --rv-gap-xs: 6px;
+  --rv-gap-sm: 10px;
+  --rv-gap: 14px;
+  --rv-gap-lg: 20px;
+  --rv-pad-card: 16px;
+  --rv-pad-card-sm: 12px;
+}
+
+/* ═══════════════════════════════════════════════════════
+ * 8. 表格样式
+ * ═══════════════════════════════════════════════════════ */
+.review-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.review-table th,
+.review-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
+  font-size: 12px;
+}
+.review-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--review-panel-2);
+  color: var(--review-muted);
+}
+.review-table tbody tr:hover {
+  background: color-mix(in srgb, var(--review-blue) 10%, transparent);
+}
+
+/* Element Plus 表格主题覆盖 */
+.review-shell .el-table {
+  --el-table-bg-color: var(--review-panel) !important;
+  --el-table-tr-bg-color: var(--review-panel) !important;
+  --el-table-header-bg-color: var(--review-panel-2) !important;
+  --el-table-row-hover-bg-color: color-mix(in srgb, var(--review-blue) 10%, var(--review-panel)) !important;
+  --el-table-border-color: var(--review-line) !important;
+  --el-table-text-color: var(--review-text) !important;
+  --el-table-header-text-color: var(--review-muted) !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+ * 9. 卡片样式
+ * ═══════════════════════════════════════════════════════ */
+.review-card {
+  border: 1px solid var(--review-line);
+  border-radius: var(--review-radius);
+  background: var(--review-card);
+  box-shadow: var(--review-shadow);
+}
+.rv-card {
+  background: var(--review-card);
+  border: 1px solid var(--review-line);
+  border-radius: var(--rv-radius);
+  box-shadow: var(--rv-shadow-1);
+  transition: box-shadow 300ms cubic-bezier(.4, 0, .2, 1), transform 300ms cubic-bezier(.4, 0, .2, 1);
+}
+.rv-card--raised { box-shadow: var(--rv-shadow-2); }
+.rv-card--hover:hover { box-shadow: var(--rv-shadow-hover); transform: translateY(-2px); }
+
+/* KPI 卡片 */
+.review-kpi {
+  border: 1px solid var(--review-line);
+  border-radius: 13px;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--review-panel-2) 82%, white 18%), var(--review-card));
+  padding: 10px 12px;
+}
+.review-kpi span { display: block; color: var(--review-muted); font-size: 12px; }
+.review-kpi b { display: block; margin-top: 4px; font-size: 20px; }
+
+/* ═══════════════════════════════════════════════════════
+ * 10. 动效
+ * ═══════════════════════════════════════════════════════ */
+:root {
+  --rv-ease: cubic-bezier(.4, 0, .2, 1);
+  --rv-dur: 300ms;
+  --rv-dur-fast: 180ms;
+}
+
+/* ═══════════════════════════════════════════════════════
+ * 11. 滚动条
+ * ═══════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-thumb { background: #c0c4cc; border-radius: 4px; }
+[data-review-theme="dark"] ::-webkit-scrollbar-thumb,
+[data-review-theme="midnight"] ::-webkit-scrollbar-thumb {
+  background: rgba(184, 197, 214, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════
+ * 12. 字体栈
+ * ═══════════════════════════════════════════════════════ */
+body, html, [data-review-theme] {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+               "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue",
+               Helvetica, Arial, sans-serif;
+  font-feature-settings: "tnum" 1, "cv06" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ═══════════════════════════════════════════════════════
+ * 13. ECharts 固定高度铁律
+ * ═══════════════════════════════════════════════════════
+ * .chart-panel  → 526px
+ * .chart-wrap   → 440px
+ * K线 grid 高   → 222px + 104px
+ * 分时 grid 高  → 230px + 105px
+ * 绝对禁止 flex/百分比/calc
+ */
+
+/* ═══════════════════════════════════════════════════════
+ * 14. 卡片 Grid 规范
+ * ═══════════════════════════════════════════════════════ */
+.stock-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+.board-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.rv-grid-auto { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
