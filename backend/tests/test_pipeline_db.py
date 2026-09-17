@@ -140,3 +140,24 @@ async def test_workbench_recovers_interrupted_jobs():
             assert row[0]=='failed' and row[1][-1]['status']=='error' and row[2] is not None
     finally:
         await engine.dispose()
+
+async def test_preparation_requires_sources_and_freezes_t1_without_fabricated_trade():
+    from app.services.workbench import save_evidence
+    from app.main import app
+    day='2025-06-12'
+    def ok(data):return {'ok':True,'data':data,'msg':'ok'}
+    try:
+        await save_evidence('basic_trade_calendar',day,ok(['20250612','20250613','20250616']))
+        await save_evidence('stockpool_strong',day,ok([{'dm':'000001','mc':'平安银行','p':10,'cje':123}]))
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app),base_url='http://test') as c:
+            body={'day':day,'code':'000001','phase':'review','mode':'short'}
+            assert (await c.post('/api/workbench/preparation/plans',json=body)).status_code==409
+            for api in ('stockpool_limit_up','stockpool_broken_board','lhb_daily'):await save_evidence(api,day,ok([]))
+            assert (await c.post('/api/workbench/preparation/plans',json=body)).json()['created']
+            assert not (await c.post('/api/workbench/preparation/plans',json=body)).json()['created']
+            result=(await c.get('/api/workbench/plans',params={'day':day})).json()['items']
+            row=next(r for r in result if r['trade_date']==day)
+            assert row['evidence']['window']['buy_date']=='2025-06-13'
+            assert row['evidence']['window']['earliest_sell_date']=='2025-06-16'
+            assert row['evidence']['reconstruction'] and row['change_since_saved'] is None
+    finally:await engine.dispose()

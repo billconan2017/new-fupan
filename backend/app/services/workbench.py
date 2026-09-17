@@ -99,6 +99,7 @@ def trend_factors(row,bars,cutoff,sessions=None):
             factor('20日突破',20 if p>high20 else 0,20,f'前20日最高 {high20:.2f}')], {'bars':len(bs),'latest':cutoff,'ma20':round(ma20,2),'ma60':round(ma60,2),'high20':high20}
 
 async def build(day,phase='live',mode='short'):
+    from app.services.research import entry_policy
     ev=await evidence(day)
     def data(api):return ev.get(api,{}).get('payload') if ev.get(api,{}).get('status') in ('ready','local') else []
     cal=(data('basic_trade_calendar') or [])+(data('calendar_previous_year') or [])
@@ -109,6 +110,7 @@ async def build(day,phase='live',mode='short'):
     pool=records(context_data('stockpool_limit_up')); strong=records(context_data('stockpool_strong'))
     pool_map={code_of(r):r for r in pool}; strong_map={code_of(r):r for r in strong}
     auctions={code_of(r):r for r in records(data('auction_morning_grab_amount')) if source_date(r.get('time'))==day}
+    dragon_codes={code_of(r) for r in dragon_records(context_data('lhb_daily'))}
     pop={code_of(r):r for r in records(data('anomaly_popularity_rank'))} if phase!='pre' else {}
     identities={code_of(r):r for r in records(data('basic_stock_list'))}
     universe=set(identities)
@@ -133,6 +135,8 @@ async def build(day,phase='live',mode='short'):
              'consecutive':value(p,'Lbc','lbc','consecutive'),
              'in_pool':code in pool_map,'strong':code in strong_map,
              'popularity':value(popular,'order'), 'tags':popular.get('tag',{}).get('concept_tag',[]) if isinstance(popular.get('tag'),dict) else []}
+        if phase=='pre':
+            row['tags']=[label for cond,label in [(code in pool_map,'前日涨停'),(code in strong_map,'前日强势'),(code in dragon_codes,'前日龙虎榜')] if cond]
         if row['open'] is not None and row['open']<=0:row['open']=None
         if phase=='pre' and mode=='trend' and previous:
             old=[b for b in records(data('kline_history:'+code)) if source_date(b.get('t'))==previous]
@@ -164,7 +168,7 @@ async def build(day,phase='live',mode='short'):
             e=ev.get(api,{})
             health.append({'api':api,'name':name,'use':use,'timing':timing,'status':e.get('status','untested'),'rows':e.get('row_count',0),'fetched_at':e.get('fetched_at'),'message':e.get('message','')})
     emotion=records(data('anomaly_emotion_cycle'));dragon=dragon_records(data('lhb_daily'))
-    return {'date':day,'is_trade_day':day in {source_date(d) for d in cal},'phase':phase,'mode':mode,'previous_date':previous,'context_date':previous if phase=='pre' else day,'rows':rows,'total':len(rows),
+    return {'entry_policy':entry_policy(day,is_trade_day=day in {source_date(d) for d in cal}),'date':day,'is_trade_day':day in {source_date(d) for d in cal},'phase':phase,'mode':mode,'previous_date':previous,'context_date':previous if phase=='pre' else day,'rows':rows,'total':len(rows),
             'scored':sum(r['score'] is not None for r in rows),'health':health,'rule_version':RULE_VERSION,
             'market':{'up':sum((r['auction_pct' if phase=='pre' else 'pct_chg'] or 0)>0 for r in rows) if rows else None,'down':sum((r['auction_pct' if phase=='pre' else 'pct_chg'] or 0)<0 for r in rows) if rows else None,
                       'limit_up':len(pool) if context.get('stockpool_limit_up',{}).get('status') in ('ready','local') else None,
@@ -217,6 +221,9 @@ async def collect(job,day,stage,codes):
                     # Previous December is needed to identify the previous session in early January.
                     prior=await liangmai.call('basic_trade_calendar',{'year':str(int(day[:4])-1)},ttl=3600)
                     await save_evidence('calendar_previous_year',day,prior)
+                if stage=='review' and day[5:7]=='12':
+                    prior=await liangmai.call('basic_trade_calendar',{'year':str(int(day[:4])+1)},ttl=3600)
+                    await save_evidence('calendar_next_year',day,prior)
                 if stage!='pre':
                     calls.extend((api,api,{'trade_date':day}) for api in ['stockpool_limit_up','stockpool_limit_down','stockpool_broken_board','stockpool_strong'])
                 if day==datetime.now(SH).date().isoformat() and stage!='pre':
@@ -233,8 +240,9 @@ async def collect(job,day,stage,codes):
                 if stage=='pre' and api=='basic_trade_calendar' and r.get('ok'):
                     prev=max((source_date(d) for d in r.get('data',[]) if source_date(d) and source_date(d)<day),default=None)
                     if prev:
-                        for base_api in ('stockpool_limit_up','stockpool_limit_down','stockpool_broken_board'):
-                            base=await liangmai.call(base_api,{'trade_date':prev},ttl=3600)
+                        for base_api in ('stockpool_limit_up','stockpool_limit_down','stockpool_broken_board','stockpool_strong','lhb_daily'):
+                            base=await liangmai.call(base_api,{'date' if base_api=='lhb_daily' else 'trade_date':prev},ttl=3600)
+                            if not base.get('ok'):base=await local_fallback(base_api,prev,base)
                             base_item=await save_evidence(base_api,prev,base)
                             base_item['date']=prev;results.append(base_item)
                             async with engine.begin() as c:await c.execute(text('UPDATE wb_jobs SET total=total+1 WHERE id=:id'),{'id':job})

@@ -71,6 +71,13 @@ def prepare(api: str, params: dict | None) -> tuple[str, dict]:
             p[key] = int(value)
         if rule.get('format') == 'date':
             raw = str(value)
+            # Official parameter examples and live probes require compact dates for ticks.
+            # Accept ISO at our boundary and normalize only these two vendor endpoints.
+            if name in {'market_tick_history','market_tick_bj_history'} and key=='trade_date':
+                raw=raw.replace('-','')
+                if not _valid_date(raw,'%Y%m%d'):raise ValueError('历史逐笔日期格式无效')
+                p[key]=raw
+                continue
             formats = ('%Y%m%d', '%Y%m%d%H%M%S') if key in {'st', 'et'} else ('%Y-%m-%d',)
             if not any(_valid_date(raw, f) for f in formats):
                 raise ValueError(f'参数 {key} 日期格式无效')

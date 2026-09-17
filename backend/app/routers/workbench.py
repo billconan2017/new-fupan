@@ -79,3 +79,38 @@ async def history(code:str,day:date):
     if len(code)!=6 or not code.isdigit():raise HTTPException(422,'股票代码无效')
     ev=await service.evidence(day.isoformat());data=ev.get('kline_history:'+code,{})
     return {'items':data.get('payload') or [],'status':data.get('status','untested'),'fetched_at':data.get('fetched_at'),'adjustment':'前复权'}
+
+@router.get('/preparation')
+async def preparation(day:date):
+    if day>datetime.now(SH).date():raise HTTPException(422,'不能使用未来盘后数据')
+    from app.services.research import preparation as build_preparation
+    return await build_preparation(day.isoformat())
+
+@router.get('/interface-audit')
+async def interface_audit():
+    from app.services.research import audit_report
+    return audit_report()
+
+@router.get('/history-study')
+async def history_study():
+    from app.services.research import history_report
+    return history_report()
+
+@router.post('/preparation/plans')
+async def freeze_preparation(body:Plan):
+    from app.services.research import preparation as build_preparation
+    from fastapi.encoders import jsonable_encoder
+    if body.phase!='review' or body.day>datetime.now(SH).date():raise HTTPException(422,'只接受已发生日期的盘后备选')
+    report=await build_preparation(body.day.isoformat())
+    row=next((r for r in report['rows'] if r['code']==body.code),None)
+    if row is None:raise HTTPException(409,'当前证据中没有该候选')
+    if not report['ready_for_decision']:raise HTTPException(409,'盘后证据尚未齐备或交易日历不足，请先补齐；临时候选不能冻结为正式计划')
+    frozen={'rule_version':report['rule_version'],'row':{**row,'source_at':None},'window':report['window'],'sources':report['sources'],
+            'reconstruction':body.day!=datetime.now(SH).date(),'execution_status':'未成交，仅观察计划'}
+    async with engine.begin() as c:
+        saved=(await c.execute(text('''INSERT INTO wb_plans(trade_date,code,name,mode,phase,note,evidence)
+            VALUES(:d,:code,:name,:mode,'review',:note,CAST(:evidence AS JSONB))
+            ON CONFLICT(trade_date,code,mode,phase) DO NOTHING RETURNING id'''),
+            {'d':body.day.isoformat(),'code':body.code,'name':row['name'],'mode':body.mode,'note':body.note,
+             'evidence':json.dumps(jsonable_encoder(frozen),ensure_ascii=False)})).scalar()
+    return {'created':bool(saved),'message':'备选依据和 T+1 日期已冻结（非成交）' if saved else '已存在，保留原始依据'}
