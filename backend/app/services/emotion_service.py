@@ -5,6 +5,7 @@ from typing import Optional
 from sqlalchemy import text
 from app.database import engine
 from app.liangmai.client import liangmai
+from app.liangmai.parsing import emotion_for_date
 
 log = logging.getLogger("emotion.service")
 
@@ -13,7 +14,7 @@ async def fetch_emotion_cycle(trade_date: str = None) -> dict:
     """拉取情绪周期数据 → emotion_cycle"""
     trade_date = trade_date or date.today().isoformat()
 
-    result = await liangmai.call("base_emotional_cycle", params={"tradeDate": trade_date}, ttl=0)
+    result = await liangmai.call("anomaly_emotion_cycle", ttl=0)
     if not result.get("ok"):
         return {"ok": False, "msg": f"量脉调用失败: {result.get('msg')}"}
 
@@ -21,34 +22,10 @@ async def fetch_emotion_cycle(trade_date: str = None) -> dict:
     if not data:
         return {"ok": True, "msg": "无情绪数据"}
 
-    item = None
-    # 量脉 columnar 格式: {code, msg, data: {colNameList: [...], contentList: [[...], ...]}}
-    # 需要解包两层
-    if isinstance(data, dict) and "data" in data and isinstance(data["data"], dict):
-        inner = data["data"]
-    else:
-        inner = data
-
-    if isinstance(inner, dict) and "colNameList" in inner and "contentList" in inner:
-        cols = inner["colNameList"]
-        rows = inner["contentList"]
-        if not rows:
-            return {"ok": True, "msg": "无情绪数据"}
-        # 取最后一行（最新日期）
-        last_row = rows[-1]
-        item = dict(zip(cols, last_row))
-    elif isinstance(data, list):
-        if not data:
-            return {"ok": True, "msg": "无情绪数据"}
-        item = data[0]
-    elif isinstance(data, dict):
-        items = data.get("list", data.get("items", []))
-        if items:
-            item = items[0] if isinstance(items, list) else data
-        else:
-            item = data
-    else:
-        return {"ok": True, "msg": "数据格式异常"}
+    item = emotion_for_date(data, trade_date)
+    if item is None:
+        return {"ok": False, "dataMissing": True, "date": trade_date,
+                "msg": "上游情绪序列不包含请求日期，未写入其他日期的数据"}
 
     # 解析情绪数据 (量脉 colNameList 映射)
     # 列: date1=日期 szbl=上涨比例 lbjs=连板数 ylgd=最高board zxgd=最低board
@@ -127,7 +104,7 @@ async def query_emotion(trade_date: str = None, days: int = 30) -> dict:
         # 近 N 天趋势
         trend_result = await conn.execute(text("""
             SELECT * FROM emotion_cycle ORDER BY trade_date DESC LIMIT :l
-        """), {"l": days})
+        """), {"l": days, "d": trade_date})
         trend = [dict(row._mapping) for row in trend_result]
 
     return {
@@ -146,8 +123,8 @@ async def query_emotion_summary(trade_date: str = None) -> dict:
         result = await conn.execute(text("""
             SELECT trade_date, emotion_score, cycle_phase, limit_up_count, limit_down_count,
                    height_board, broken_count
-            FROM emotion_cycle ORDER BY trade_date DESC LIMIT 10
-        """))
+            FROM emotion_cycle WHERE trade_date <= :d ORDER BY trade_date DESC LIMIT 10
+        """), {"d": trade_date})
         rows = [dict(row._mapping) for row in result]
 
     if not rows:

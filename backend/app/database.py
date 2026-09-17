@@ -4,7 +4,7 @@ from app.config import get_settings
 
 settings = get_settings()
 
-_url = f"postgresql+asyncpg://{settings.pg_user}@/{settings.pg_database}?host=/var/run/postgresql"
+_url = settings.pg_url
 
 engine = create_async_engine(_url, echo=settings.debug, pool_size=10, max_overflow=20)
 async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
@@ -20,5 +20,6 @@ async def get_db() -> AsyncSession:
             await session.close()
 
 async def init_db():
+    import app.models  # register all tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

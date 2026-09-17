@@ -80,3 +80,5 @@ export const getBlacklist = () => api.get('/trading/blacklist')
 // ── 基础数据 ──
 export const getStockBasic = (params) => api.get('/stock-basic', { params })
 export const getSectorTree = (params) => api.get('/sector/tree', { params })
+
+export const getDataQuality = (date) => api.get("/data-quality/status", { params: { date } })

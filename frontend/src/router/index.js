@@ -13,7 +13,7 @@ const routes = [
   { path: '/portfolio', name: 'Portfolio', component: () => import('../views/Placeholder.vue'), meta: { title: '持仓管理', icon: '💼', api: 'portfolio' } },
   { path: '/strategy', name: 'Strategy', component: () => import('../views/Strategy.vue'), meta: { title: '策略选股', icon: '🎯' } },
   { path: '/live-trading', name: 'LiveTrading', component: () => import('../views/Portfolio.vue'), meta: { title: '实盘组合', icon: '💼' } },
-  { path: '/admin/data-sources', name: 'DataSources', component: () => import('../views/Placeholder.vue'), meta: { title: '数据源管理', icon: '🗄️', api: 'data_source_lineage' } },
+  { path: '/admin/data-sources', name: 'DataSources', component: () => import('../views/DataSources.vue'), meta: { title: '数据源管理', icon: '🗄️', api: 'data_source_lineage' } },
 ]
 
 const router = createRouter({

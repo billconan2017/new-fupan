@@ -20,7 +20,8 @@ import app.models.stock  # noqa: F401
 target_metadata = Base.metadata
 
 # Use sync URL for alembic
-SYNC_URL = "postgresql://bill@/new_fupan?host=/var/run/postgresql"
+from app.config import get_settings
+SYNC_URL = get_settings().pg_url_sync
 
 
 def run_migrations_offline() -> None:

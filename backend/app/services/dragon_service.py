@@ -5,6 +5,8 @@ from typing import Optional
 from sqlalchemy import text
 from app.database import engine
 from app.liangmai.client import liangmai
+from app.liangmai.parsing import dragon_records, number, source_date, records
+import hashlib
 
 log = logging.getLogger("dragon.service")
 
@@ -24,7 +26,7 @@ async def fetch_dragon_tiger(trade_date: str = None) -> dict:
     if not available:
         return {"ok": False, "msg": msg}
 
-    result = await liangmai.call("dragonTiger", params={"date": trade_date}, ttl=0)
+    result = await liangmai.call("lhb_daily", params={"date": trade_date}, ttl=0)
     if not result.get("ok"):
         return {"ok": False, "msg": f"量脉调用失败: {result.get('msg')}"}
 
@@ -32,7 +34,7 @@ async def fetch_dragon_tiger(trade_date: str = None) -> dict:
     if not data:
         return {"ok": True, "count": 0, "msg": "无龙虎榜数据"}
 
-    items = data if isinstance(data, list) else data.get("list", data.get("items", []))
+    items = dragon_records(data)
     if not items:
         return {"ok": True, "count": 0}
 
@@ -48,17 +50,21 @@ async def _insert_dragon_tiger(trade_date: str, items: list) -> int:
     """写入龙虎榜主表"""
     rows = []
     for s in items:
-        code = s.get("c", s.get("code", s.get("dm", "")))
+        code = s.get("thsCode", s.get("c", s.get("code", s.get("dm", ""))))
         if not code:
             continue
         rows.append({
             "trade_date": trade_date,
             "code": code,
             "name": s.get("n", s.get("name", "")),
-            "pct_chg": _float(s.get("pc", s.get("pct_chg", s.get("change_pct", 0)))),
-            "turnover": _float(s.get("hs", s.get("turnover", 0))),
-            "amount": _float(s.get("cje", s.get("amount", 0))),
-            "net_amount": _float(s.get("net_buy", s.get("net_amount", 0))),
+            "pct_chg": _float(s.get("chg", s.get("pc", s.get("pct_chg")))),
+            "close": _float(s.get("close")),
+            "buy_amount": _wan(s.get("buyAmount")),
+            "sell_amount": _wan(s.get("sellAmount")),
+            "turnover": _float(s.get("hs", s.get("turnover"))),
+            "amount": _float(s.get("cje", s.get("amount"))),
+            "net_amount": (_wan(s["buyAmount"]) - _wan(s["sellAmount"]))
+                if number(s.get("buyAmount")) is not None and number(s.get("sellAmount")) is not None else None,
             "reason": s.get("reason", s.get("lhb_reason", "")),
         })
 
@@ -78,7 +84,7 @@ async def _insert_dragon_seats(trade_date: str, items: list) -> int:
     """写入龙虎榜席位明细"""
     rows = []
     for s in items:
-        code = s.get("c", s.get("code", s.get("dm", "")))
+        code = s.get("thsCode", s.get("c", s.get("code", s.get("dm", ""))))
         if not code:
             continue
         # 席位数据可能在 seats/buy_seats/sell_seats 字段
@@ -117,8 +123,8 @@ def _parse_seat(trade_date: str, code: str, seat: dict, direction: str) -> Optio
         "code": code,
         "seat_name": name,
         "seat_type": direction,
-        "amount": _float(seat.get("amount", seat.get("buy_amount", seat.get("sell_amount", 0)))),
-        "rank": _int(seat.get("rank", seat.get("seat_rank", 0))),
+        "amount": _float(seat.get("amount", seat.get("buy_amount", seat.get("sell_amount")))),
+        "rank": _int(seat.get("rank", seat.get("seat_rank"))),
     }
 
 
@@ -133,7 +139,7 @@ async def fetch_youzi_all(trade_date: str = None) -> dict:
     """
     trade_date = trade_date or date.today().isoformat()
 
-    result = await liangmai.call("hotmoney_all", params={"date": trade_date}, ttl=0)
+    result = await liangmai.call("lhb_trader_records", params={"date": trade_date}, ttl=0)
     if not result.get("ok"):
         return {"ok": False, "msg": f"量脉调用失败: {result.get('msg')}"}
 
@@ -141,7 +147,7 @@ async def fetch_youzi_all(trade_date: str = None) -> dict:
     if not data:
         return {"ok": True, "count": 0, "msg": "无游资数据"}
 
-    items = data if isinstance(data, list) else data.get("list", data.get("items", []))
+    items = normalize_youzi(data, trade_date)
     if not items:
         return {"ok": True, "count": 0}
 
@@ -207,7 +213,7 @@ async def _insert_youzi_trades(trade_date: str, items: list) -> int:
                     "code": code,
                     "name": stk.get("n", stk.get("name", "")),
                     "direction": direction,
-                    "amount": _float(stk.get("amount", stk.get("cje", 0))),
+                    "amount": _float(stk.get("amount", stk.get("cje"))),
                 })
 
     if not rows:
@@ -225,14 +231,14 @@ async def _insert_youzi_trades(trade_date: str, items: list) -> int:
 async def fetch_youzi_stock(code: str, trade_date: str = None) -> dict:
     """拉取个股游资操作记录"""
     trade_date = trade_date or date.today().isoformat()
-    result = await liangmai.call("hotmoney_stock", params={"dm": code, "date": trade_date}, ttl=60)
+    result = await liangmai.call("lhb_stock_trader_records", params={"code": code, "startDate": trade_date, "endDate": trade_date}, ttl=60)
     return result
 
 
 async def fetch_youzi_name(name: str, trade_date: str = None) -> dict:
     """拉取指定游资的历史操作"""
     trade_date = trade_date or date.today().isoformat()
-    result = await liangmai.call("hotmoney_name", params={"name": name, "date": trade_date}, ttl=60)
+    result = await liangmai.call("lhb_trader_record_history", params={"yzmc": name, "date": trade_date}, ttl=60)
     return result
 
 
@@ -323,3 +329,24 @@ def _int(v) -> Optional[int]:
         return int(float(v)) if v is not None else None
     except (ValueError, TypeError):
         return None
+
+
+def _wan(value):
+    n = number(value)
+    return n * 10000 if n is not None else None
+
+
+def normalize_youzi(data, trade_date):
+    grouped = {}
+    for row in records(data):
+        name = row.get("yzmc")
+        code = row.get("gpdm")
+        if not name or not code or (row.get("rq") and source_date(row["rq"]) != trade_date):
+            continue
+        entry = grouped.setdefault(name, {"id": hashlib.sha256(name.encode()).hexdigest()[:24],
+                                           "name": name, "buy_list": [], "sell_list": []})
+        for key, bucket in (("mrje", "buy_list"), ("mcje", "sell_list")):
+            amount = number(row.get(key))
+            if amount is not None and amount > 0:
+                entry[bucket].append({"code": code, "name": row.get("gpmc"), "amount": amount})
+    return list(grouped.values())

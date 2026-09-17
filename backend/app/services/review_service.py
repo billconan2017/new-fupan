@@ -484,6 +484,8 @@ def _calculate_score(emotion, limit_up, limit_down, broken_board, dragon, capita
 
 async def _save_report(trade_date: str, report: dict):
     """写入/更新报告"""
+    from fastapi.encoders import jsonable_encoder
+    report = jsonable_encoder(report)
     async with engine.begin() as conn:
         await conn.execute(text("DELETE FROM review_reports WHERE trade_date = :d"), {"d": trade_date})
         await conn.execute(text("""

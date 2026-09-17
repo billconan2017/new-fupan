@@ -1,4 +1,6 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field
+from sqlalchemy.engine import URL
 from functools import lru_cache
 
 
@@ -17,11 +19,17 @@ class Settings(BaseSettings):
 
     @property
     def pg_url(self) -> str:
-        return f"postgresql+asyncpg://{self.pg_user}:{self.pg_password}@{self.pg_host}:{self.pg_port}/{self.pg_database}"
+        return self._database_url("postgresql+asyncpg").render_as_string(hide_password=False)
 
     @property
     def pg_url_sync(self) -> str:
-        return f"postgresql://{self.pg_user}:{self.pg_password}@{self.pg_host}:{self.pg_port}/{self.pg_database}"
+        return self._database_url("postgresql+psycopg2").render_as_string(hide_password=False)
+
+    def _database_url(self, driver):
+        if self.pg_host.startswith("/"):
+            return URL.create(driver, username=self.pg_user, database=self.pg_database, query={"host": self.pg_host, "port": str(self.pg_port)})
+        return URL.create(driver, username=self.pg_user, password=self.pg_password,
+                          host=self.pg_host, port=self.pg_port, database=self.pg_database)
 
     # Redis
     redis_host: str = "localhost"
@@ -39,7 +47,12 @@ class Settings(BaseSettings):
     liangmai_token: str = ""
     liangmai_safe_rate: int = 120
     liangmai_peak_rate: int = 180
-    liangmai_snapshot_cooldown: int = 60
+    liangmai_snapshot_cooldown: int = Field(default=60, ge=60)
+    liangmai_timeout: float = Field(default=10, gt=0)
+    liangmai_total_timeout: float = Field(default=25, gt=0)
+    liangmai_max_attempts: int = Field(default=3, ge=1, le=5)
+    liangmai_cache_max_entries: int = Field(default=256, ge=1)
+    scheduler_enabled: bool = True
 
     # ── 数据源熔断 ──
     circuit_breaker_threshold: int = 3        # 连续失败N次触发熔断
@@ -52,9 +65,7 @@ class Settings(BaseSettings):
     host: str = "0.0.0.0"
     port: int = 9009
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 
 @lru_cache()

@@ -1,0 +1,3048 @@
+{
+  "source": "https://liangmai.pro/docs",
+  "retrieved": "2026-09-17",
+  "endpoints": {
+    "basic_stock_list": {
+      "params": {}
+    },
+    "basic_hs_list": {
+      "params": {}
+    },
+    "basic_ipo_calendar": {
+      "params": {}
+    },
+    "sector_catalog": {
+      "params": {}
+    },
+    "sector_members": {
+      "params": {
+        "sector_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "sector_of_stock": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "basic_index_list": {
+      "params": {}
+    },
+    "basic_bj_stock_list": {
+      "params": {}
+    },
+    "basic_bj_index_list": {
+      "params": {}
+    },
+    "basic_hk_stock_list": {
+      "params": {}
+    },
+    "basic_kc_stock_list": {
+      "params": {}
+    },
+    "basic_fund_list": {
+      "params": {}
+    },
+    "basic_etf_list": {
+      "params": {}
+    },
+    "stockpool_limit_up": {
+      "params": {
+        "trade_date": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "stockpool_limit_down": {
+      "params": {
+        "trade_date": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "stockpool_strong": {
+      "params": {
+        "trade_date": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "stockpool_subnew": {
+      "params": {
+        "trade_date": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "stockpool_broken_board": {
+      "params": {
+        "trade_date": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "corp_profile": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "corp_index_membership": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "corp_exec_history": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "corp_board_history": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "corp_supervisor_history": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "corp_dividend": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "corp_issue": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "corp_unlock": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "corp_quarter_profit": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "corp_quarter_cashflow": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "corp_forecast": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "corp_finance_metrics": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "corp_top10_holders": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "corp_top10_float_holders": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "corp_holder_trend": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "corp_fund_holdings": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "market_quote": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "market_tick_today": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "market_tick_history": {
+      "params": {
+        "trade_date": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "market_tick_bj_today": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "market_tick_bj_history": {
+      "params": {
+        "trade_date": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "market_quote_multi": {
+      "params": {
+        "stock_codes": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "market_quote_pro": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "market_five": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "flow_stock_history": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "kline_latest": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "1",
+            "5",
+            "15",
+            "30",
+            "60",
+            "d",
+            "w",
+            "m",
+            "y"
+          ],
+          "default": "d"
+        },
+        "cq": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "n",
+            "f",
+            "b",
+            "fr",
+            "br"
+          ],
+          "default": "n"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "kline_history": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "1",
+            "5",
+            "15",
+            "30",
+            "60",
+            "d",
+            "w",
+            "m",
+            "y"
+          ],
+          "default": "d"
+        },
+        "cq": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "n",
+            "f",
+            "b",
+            "fr",
+            "br"
+          ],
+          "default": "n"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "kline_stop_price_history": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "market_indicator": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "basic_stock_instrument": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "finance_balance_sheet": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "finance_income_statement": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "finance_cashflow_statement": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "finance_per_share_index": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "finance_capital_structure": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "finance_top10_holders": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "finance_top10_float_holders": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "finance_holder_counts": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "indicator_macd": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "5",
+            "15",
+            "30",
+            "60",
+            "d",
+            "w",
+            "m",
+            "y"
+          ],
+          "default": "d"
+        },
+        "cq": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "n",
+            "f",
+            "b",
+            "fr",
+            "br"
+          ],
+          "default": "n"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "indicator_ma": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "5",
+            "15",
+            "30",
+            "60",
+            "d",
+            "w",
+            "m",
+            "y"
+          ],
+          "default": "d"
+        },
+        "cq": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "n",
+            "f",
+            "b",
+            "fr",
+            "br"
+          ],
+          "default": "n"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "indicator_boll": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "5",
+            "15",
+            "30",
+            "60",
+            "d",
+            "w",
+            "m",
+            "y"
+          ],
+          "default": "d"
+        },
+        "cq": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "n",
+            "f",
+            "b",
+            "fr",
+            "br"
+          ],
+          "default": "n"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "indicator_kdj": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "5",
+            "15",
+            "30",
+            "60",
+            "d",
+            "w",
+            "m",
+            "y"
+          ],
+          "default": "d"
+        },
+        "cq": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "n",
+            "f",
+            "b",
+            "fr",
+            "br"
+          ],
+          "default": "n"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "indicator_ma_legacy": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "1",
+            "5",
+            "15",
+            "30",
+            "60",
+            "d",
+            "w",
+            "m",
+            "y"
+          ],
+          "default": "d"
+        },
+        "cq": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "n",
+            "f",
+            "b",
+            "fr",
+            "br"
+          ],
+          "default": "n"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "idx_realtime": {
+      "params": {
+        "index_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "idx_bars_latest": {
+      "params": {
+        "index_full": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "1",
+            "5",
+            "15",
+            "30",
+            "60",
+            "d",
+            "w",
+            "m",
+            "y"
+          ],
+          "default": "d"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "idx_bars_history": {
+      "params": {
+        "index_full": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "1",
+            "5",
+            "15",
+            "30",
+            "60",
+            "d",
+            "w",
+            "m",
+            "y"
+          ],
+          "default": "d"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "idx_macd": {
+      "params": {
+        "index_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "1",
+            "5",
+            "15",
+            "30",
+            "60",
+            "d",
+            "w",
+            "m",
+            "y"
+          ],
+          "default": "d"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "idx_ma": {
+      "params": {
+        "index_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "1",
+            "5",
+            "15",
+            "30",
+            "60",
+            "d",
+            "w",
+            "m",
+            "y"
+          ],
+          "default": "d"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "idx_boll": {
+      "params": {
+        "index_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "1",
+            "5",
+            "15",
+            "30",
+            "60",
+            "d",
+            "w",
+            "m",
+            "y"
+          ],
+          "default": "d"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "idx_kdj": {
+      "params": {
+        "index_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "1",
+            "5",
+            "15",
+            "30",
+            "60",
+            "d",
+            "w",
+            "m",
+            "y"
+          ],
+          "default": "d"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "market_bj_quote": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "market_bj_five": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "market_hk_quote": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "market_hk_five": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "market_kc_quote": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "market_kc_five": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "market_fund_quote": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "market_snapshot_all": {
+      "params": {}
+    },
+    "sector_index_list": {
+      "params": {}
+    },
+    "sector_primary_list": {
+      "params": {}
+    },
+    "sector_detail_list": {
+      "params": {
+        "sector_name": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "basic_trade_calendar": {
+      "params": {
+        "year": {
+          "required": true,
+          "type": "integer"
+        }
+      }
+    },
+    "market_quote_all": {
+      "params": {}
+    },
+    "kline_vip_history": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "1",
+            "5",
+            "15",
+            "30",
+            "60",
+            "d",
+            "w",
+            "m",
+            "y"
+          ],
+          "default": "d"
+        },
+        "cq": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "n",
+            "f",
+            "b",
+            "fr",
+            "br"
+          ],
+          "default": "n"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "market_limit_perf": {
+      "params": {
+        "stock_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "auction_limit_perf": {
+      "params": {
+        "stock_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "announcement_interactive_qa": {
+      "params": {
+        "stock_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "announcement_list": {
+      "params": {
+        "stock_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "trade_daily_tips": {
+      "params": {}
+    },
+    "trade_margin_total": {
+      "params": {}
+    },
+    "trade_margin_detail": {
+      "params": {}
+    },
+    "trade_block_deal": {
+      "params": {}
+    },
+    "trade_unlock": {
+      "params": {}
+    },
+    "trade_ipo_profit": {
+      "params": {}
+    },
+    "trade_dividend_history": {
+      "params": {}
+    },
+    "lhb_daily_detail": {
+      "params": {}
+    },
+    "lhb_stock_stat": {
+      "params": {
+        "days": {
+          "required": true,
+          "type": "integer"
+        }
+      }
+    },
+    "lhb_branch_stat": {
+      "params": {
+        "days": {
+          "required": true,
+          "type": "integer"
+        }
+      }
+    },
+    "lhb_institution_track": {
+      "params": {
+        "days": {
+          "required": true,
+          "type": "integer"
+        }
+      }
+    },
+    "lhb_institution_detail": {
+      "params": {}
+    },
+    "monitor_stage_high_low": {
+      "params": {}
+    },
+    "monitor_new_high": {
+      "params": {}
+    },
+    "monitor_new_low": {
+      "params": {}
+    },
+    "monitor_turnover_surge": {
+      "params": {}
+    },
+    "monitor_turnover_slump": {
+      "params": {}
+    },
+    "monitor_volume_surge_days": {
+      "params": {}
+    },
+    "monitor_volume_slump_days": {
+      "params": {}
+    },
+    "monitor_rise_days": {
+      "params": {}
+    },
+    "monitor_fall_days": {
+      "params": {}
+    },
+    "monitor_week_change_rank": {
+      "params": {}
+    },
+    "monitor_month_change_rank": {
+      "params": {}
+    },
+    "monitor_week_strong": {
+      "params": {}
+    },
+    "monitor_month_strong": {
+      "params": {}
+    },
+    "monitor_float_cap_rank": {
+      "params": {}
+    },
+    "monitor_pe_rank": {
+      "params": {}
+    },
+    "monitor_pb_rank": {
+      "params": {}
+    },
+    "monitor_roe_rank": {
+      "params": {}
+    },
+    "rank_profit_ability": {
+      "params": {
+        "year": {
+          "required": true,
+          "type": "integer"
+        },
+        "quarter": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      }
+    },
+    "rank_operation_ability": {
+      "params": {
+        "year": {
+          "required": true,
+          "type": "integer"
+        },
+        "quarter": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      }
+    },
+    "rank_growth_ability": {
+      "params": {
+        "year": {
+          "required": true,
+          "type": "integer"
+        },
+        "quarter": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      }
+    },
+    "rank_solvency": {
+      "params": {
+        "year": {
+          "required": true,
+          "type": "integer"
+        },
+        "quarter": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      }
+    },
+    "rank_cashflow": {
+      "params": {
+        "year": {
+          "required": true,
+          "type": "integer"
+        },
+        "quarter": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      }
+    },
+    "rank_report": {
+      "params": {
+        "year": {
+          "required": true,
+          "type": "integer"
+        },
+        "quarter": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      }
+    },
+    "rank_forecast": {
+      "params": {
+        "year": {
+          "required": true,
+          "type": "integer"
+        },
+        "quarter": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      }
+    },
+    "rank_express": {
+      "params": {
+        "year": {
+          "required": true,
+          "type": "integer"
+        },
+        "quarter": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      }
+    },
+    "rank_profit_breakdown": {
+      "params": {}
+    },
+    "holding_institution_summary": {
+      "params": {
+        "year": {
+          "required": true,
+          "type": "integer"
+        },
+        "quarter": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      }
+    },
+    "holding_fund": {
+      "params": {
+        "year": {
+          "required": true,
+          "type": "integer"
+        },
+        "quarter": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      }
+    },
+    "holding_social_security": {
+      "params": {
+        "year": {
+          "required": true,
+          "type": "integer"
+        },
+        "quarter": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      }
+    },
+    "holding_qfii": {
+      "params": {
+        "year": {
+          "required": true,
+          "type": "integer"
+        },
+        "quarter": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      }
+    },
+    "sector_csrc_industry": {
+      "params": {}
+    },
+    "sector_concept_list": {
+      "params": {}
+    },
+    "flow_net_inflow_rank": {
+      "params": {}
+    },
+    "flow_net_inflow_rate_rank": {
+      "params": {}
+    },
+    "flow_main_inflow_rank": {
+      "params": {}
+    },
+    "flow_main_inflow_rate_rank": {
+      "params": {}
+    },
+    "flow_retail_inflow_rank": {
+      "params": {}
+    },
+    "flow_retail_inflow_rate_rank": {
+      "params": {}
+    },
+    "flow_csrc_industry": {
+      "params": {}
+    },
+    "flow_sector_map": {
+      "params": {}
+    },
+    "flow_stock_stage_overview": {
+      "params": {}
+    },
+    "flow_stock_stage": {
+      "params": {
+        "days": {
+          "required": true,
+          "type": "integer"
+        }
+      }
+    },
+    "flow_main_consecutive": {
+      "params": {}
+    },
+    "northbound_flow_overview": {
+      "params": {}
+    },
+    "northbound_north_trend": {
+      "params": {
+        "jd": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "1",
+            "6",
+            "12",
+            "all"
+          ]
+        }
+      }
+    },
+    "northbound_south_trend": {
+      "params": {
+        "jd": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "1",
+            "6",
+            "12",
+            "all"
+          ]
+        }
+      }
+    },
+    "northbound_north_history": {
+      "params": {}
+    },
+    "northbound_south_history": {
+      "params": {}
+    },
+    "northbound_sh_component": {
+      "params": {}
+    },
+    "northbound_sz_component": {
+      "params": {}
+    },
+    "northbound_hk_component_sh": {
+      "params": {}
+    },
+    "northbound_hk_component_sz": {
+      "params": {}
+    },
+    "northbound_ah_premium": {
+      "params": {}
+    },
+    "northbound_sh_top10": {
+      "params": {}
+    },
+    "northbound_sz_top10": {
+      "params": {}
+    },
+    "northbound_hk_top10_sh": {
+      "params": {}
+    },
+    "northbound_hk_top10_sz": {
+      "params": {}
+    },
+    "northbound_north_rank": {
+      "params": {
+        "zq": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "d",
+            "3",
+            "5",
+            "10",
+            "m",
+            "q",
+            "y"
+          ]
+        }
+      }
+    },
+    "northbound_sh_rank": {
+      "params": {
+        "zq": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "d",
+            "3",
+            "5",
+            "10",
+            "m",
+            "q",
+            "y"
+          ]
+        }
+      }
+    },
+    "northbound_sz_rank": {
+      "params": {
+        "zq": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "d",
+            "3",
+            "5",
+            "10",
+            "m",
+            "q",
+            "y"
+          ]
+        }
+      }
+    },
+    "northbound_sh_history": {
+      "params": {}
+    },
+    "northbound_sz_history": {
+      "params": {}
+    },
+    "northbound_hk_history_sh": {
+      "params": {}
+    },
+    "northbound_hk_history_sz": {
+      "params": {}
+    },
+    "bond_list": {
+      "params": {}
+    },
+    "bond_comparison": {
+      "params": {}
+    },
+    "bond_quote": {
+      "params": {}
+    },
+    "idx_bj_realtime": {
+      "params": {
+        "index_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "market_bj_kline": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "5",
+            "15",
+            "30",
+            "60",
+            "d",
+            "w",
+            "m",
+            "y"
+          ],
+          "default": "d"
+        },
+        "cq": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "n",
+            "f",
+            "b",
+            "fr",
+            "br"
+          ],
+          "default": "n"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "finance_bj_balance_sheet": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "finance_bj_income_statement": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "finance_bj_cashflow_statement": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "finance_bj_per_share_index": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "finance_bj_capital_structure": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "finance_bj_top10_holders": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "finance_bj_top10_float_holders": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "finance_bj_holder_counts": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "indicator_bj_macd": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "5",
+            "15",
+            "30",
+            "60",
+            "d",
+            "w",
+            "m",
+            "y"
+          ],
+          "default": "d"
+        },
+        "cq": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "n",
+            "f",
+            "b",
+            "fr",
+            "br"
+          ],
+          "default": "n"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "indicator_bj_ma": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "5",
+            "15",
+            "30",
+            "60",
+            "d",
+            "w",
+            "m",
+            "y"
+          ],
+          "default": "d"
+        },
+        "cq": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "n",
+            "f",
+            "b",
+            "fr",
+            "br"
+          ],
+          "default": "n"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "indicator_bj_boll": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "5",
+            "15",
+            "30",
+            "60",
+            "d",
+            "w",
+            "m",
+            "y"
+          ],
+          "default": "d"
+        },
+        "cq": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "n",
+            "f",
+            "b",
+            "fr",
+            "br"
+          ],
+          "default": "n"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "indicator_bj_kdj": {
+      "params": {
+        "full_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "5",
+            "15",
+            "30",
+            "60",
+            "d",
+            "w",
+            "m",
+            "y"
+          ],
+          "default": "d"
+        },
+        "cq": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "n",
+            "f",
+            "b",
+            "fr",
+            "br"
+          ],
+          "default": "n"
+        },
+        "st": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "et": {
+          "required": false,
+          "type": "string",
+          "format": "date"
+        },
+        "lt": {
+          "required": false,
+          "type": "integer"
+        }
+      }
+    },
+    "fund_list": {
+      "params": {}
+    },
+    "fund_valuation_list": {
+      "params": {}
+    },
+    "fund_intraday_valuation": {
+      "params": {
+        "fund_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "fund_closed_list": {
+      "params": {}
+    },
+    "fund_etf_list": {
+      "params": {}
+    },
+    "fund_lof_list": {
+      "params": {}
+    },
+    "fund_kline_latest": {
+      "params": {
+        "fund_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "Day",
+            "Week",
+            "Month",
+            "dn"
+          ],
+          "default": "Day"
+        }
+      }
+    },
+    "fund_kline_history": {
+      "params": {
+        "fund_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "Day",
+            "Week",
+            "Month",
+            "dn"
+          ],
+          "default": "Day"
+        }
+      }
+    },
+    "fund_ma_latest": {
+      "params": {
+        "fund_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "Day",
+            "Week",
+            "Month",
+            "dn"
+          ],
+          "default": "Day"
+        }
+      }
+    },
+    "fund_ma_history": {
+      "params": {
+        "fund_code": {
+          "required": true,
+          "type": "string"
+        },
+        "interval": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "Day",
+            "Week",
+            "Month",
+            "dn"
+          ],
+          "default": "Day"
+        }
+      }
+    },
+    "fund_profile": {
+      "params": {
+        "fund_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "fund_nav_history": {
+      "params": {
+        "fund_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "fund_stock_holding": {
+      "params": {
+        "fund_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "fund_bond_holding": {
+      "params": {
+        "fund_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "fund_nav_rank_open": {
+      "params": {}
+    },
+    "fund_nav_rank_open_yield": {
+      "params": {}
+    },
+    "fund_nav_rank_closed": {
+      "params": {}
+    },
+    "fund_perf_rank_open": {
+      "params": {}
+    },
+    "fund_perf_rank_closed": {
+      "params": {}
+    },
+    "fund_perf_rank_graded": {
+      "params": {}
+    },
+    "fund_dividend_open": {
+      "params": {}
+    },
+    "fund_dividend_closed": {
+      "params": {}
+    },
+    "fund_dividend_graded": {
+      "params": {}
+    },
+    "fund_scale_open": {
+      "params": {}
+    },
+    "fund_scale_closed": {
+      "params": {}
+    },
+    "fund_scale_graded": {
+      "params": {}
+    },
+    "fund_heavy_holding": {
+      "params": {
+        "report_period": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "fund_heavy_holding_change": {
+      "params": {
+        "report_period": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "fund_distributor": {
+      "params": {}
+    },
+    "factors_categories": {
+      "params": {}
+    },
+    "factors_valuation": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "factors_quality": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "factors_growth": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "factors_momentum": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "factors_capital": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "factors_signal": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "factors_risk": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "factors_dividend": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "factors_scale": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "factors_sentiment": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "factors_all": {
+      "params": {
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "factors_rank": {
+      "params": {
+        "factor_id": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "factors_top": {
+      "params": {
+        "factor_id": {
+          "required": true,
+          "type": "string"
+        },
+        "n": {
+          "required": true,
+          "type": "integer"
+        }
+      }
+    },
+    "factors_history": {
+      "params": {
+        "factor_id": {
+          "required": true,
+          "type": "string"
+        },
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "factors_percentile": {
+      "params": {
+        "factor_id": {
+          "required": true,
+          "type": "string"
+        },
+        "ts_code": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "lhb_daily": {
+      "params": {
+        "date": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "lhb_trader_record_history": {
+      "params": {
+        "yzmc": {
+          "required": true,
+          "type": "string"
+        },
+        "date": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "lhb_stock_trader_records": {
+      "params": {
+        "code": {
+          "required": true,
+          "type": "string"
+        },
+        "startDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "endDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "lhb_trader_records": {
+      "params": {
+        "date": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "lhb_trader_names": {
+      "params": {}
+    },
+    "auction_morning_sector": {
+      "params": {
+        "startDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "endDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "type": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "auction_morning_sector_pro": {
+      "params": {
+        "tradeDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "auction_morning_sector_members_pro": {
+      "params": {
+        "tradeDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "bkCode": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "auction_morning_sector_members": {
+      "params": {
+        "startDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "endDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "bkCode": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "auction_morning_grab_amount": {
+      "params": {
+        "tradeDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "period": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "0",
+            "1"
+          ]
+        },
+        "type": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      }
+    },
+    "auction_morning_grab_turnover": {
+      "params": {
+        "tradeDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "period": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "0",
+            "1"
+          ]
+        },
+        "type": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "default": "2"
+        }
+      }
+    },
+    "auction_morning_grab_open": {
+      "params": {
+        "tradeDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "period": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "0",
+            "1"
+          ]
+        },
+        "type": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "default": "3"
+        }
+      }
+    },
+    "auction_morning_grab_change": {
+      "params": {
+        "tradeDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "period": {
+          "required": true,
+          "type": "string",
+          "enum": [
+            "0",
+            "1"
+          ]
+        },
+        "type": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "default": "4"
+        }
+      }
+    },
+    "auction_tail_grab_amount": {
+      "params": {
+        "tradeDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "period": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "0",
+            "1"
+          ],
+          "default": "1"
+        },
+        "type": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "default": "1"
+        }
+      }
+    },
+    "auction_tail_grab_turnover": {
+      "params": {
+        "tradeDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "period": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "0",
+            "1"
+          ],
+          "default": "1"
+        },
+        "type": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "default": "2"
+        }
+      }
+    },
+    "auction_tail_grab_close": {
+      "params": {
+        "tradeDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "period": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "0",
+            "1"
+          ],
+          "default": "1"
+        },
+        "type": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "default": "3"
+        }
+      }
+    },
+    "auction_tail_grab_change": {
+      "params": {
+        "tradeDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "period": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "0",
+            "1"
+          ],
+          "default": "1"
+        },
+        "type": {
+          "required": false,
+          "type": "string",
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "default": "4"
+        }
+      }
+    },
+    "auction_one_word_limit": {
+      "params": {
+        "tradeDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "basic_st_list": {
+      "params": {}
+    },
+    "sector_concept_code": {
+      "params": {}
+    },
+    "sector_plate_code": {
+      "params": {}
+    },
+    "flow_sector_history": {
+      "params": {
+        "bkCode": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "sector_member_list": {
+      "params": {
+        "bkCode": {
+          "required": true,
+          "type": "string"
+        },
+        "pageNo": {
+          "required": true,
+          "type": "integer"
+        },
+        "pageSize": {
+          "required": true,
+          "type": "integer"
+        }
+      }
+    },
+    "anomaly_all_history": {
+      "params": {
+        "startDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "endDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "type": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "anomaly_stock_history": {
+      "params": {
+        "code": {
+          "required": true,
+          "type": "string"
+        },
+        "startDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "endDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "anomaly_popularity_rank": {
+      "params": {}
+    },
+    "anomaly_emotion_cycle": {
+      "params": {}
+    },
+    "risk_share_reduction": {
+      "params": {
+        "code": {
+          "required": false,
+          "type": "string"
+        },
+        "tradeDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "type": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "risk_unlock": {
+      "params": {
+        "code": {
+          "required": false,
+          "type": "string"
+        },
+        "tradeDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "type": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "risk_monitor": {
+      "params": {
+        "code": {
+          "required": false,
+          "type": "string"
+        },
+        "tradeDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "type": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "risk_serious_alert": {
+      "params": {
+        "code": {
+          "required": false,
+          "type": "string"
+        },
+        "tradeDate": {
+          "required": true,
+          "type": "string",
+          "format": "date"
+        },
+        "type": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    }
+  }
+}

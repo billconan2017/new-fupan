@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from app.liangmai.client import liangmai
-from app.cache import cache
+from app.liangmai.parsing import emotion_for_date
 
 router = APIRouter(prefix="/api/fupan", tags=["fupan"])
 
@@ -8,12 +8,7 @@ router = APIRouter(prefix="/api/fupan", tags=["fupan"])
 @router.get("/limit-up/{date}")
 async def limit_up(date: str):
     """涨停池"""
-    cached = await cache.get(f"fupan:limit_up:{date}")
-    if cached:
-        return {"ok": True, "data": cached, "source": "redis"}
-    result = await liangmai.call("pool_limit_up", {"trade_date": date}, ttl=300)
-    if result["ok"]:
-        await cache.set(f"fupan:limit_up:{date}", result["data"], ttl=300)
+    result = await liangmai.call("stockpool_limit_up", {"trade_date": date}, ttl=300)
     return result
 
 
@@ -41,12 +36,18 @@ async def broken_board(date: str):
 @router.get("/emotion/{date}")
 async def emotion(date: str):
     """情绪周期"""
-    result = await liangmai.call("base_emotional_cycle", ttl=300)
+    result = await liangmai.call("anomaly_emotion_cycle", ttl=300)
+    if result.get("ok"):
+        row = emotion_for_date(result.get("data"), date)
+        result["data"] = row
+        result["_meta"]["dataMissing"] = row is None
+        result["_meta"]["dataDate"] = date if row else None
+        result["msg"] = "ok" if row else "请求日期无情绪数据"
     return result
 
 
 @router.get("/dragon-tiger/{date}")
 async def dragon_tiger(date: str):
     """龙虎榜"""
-    result = await liangmai.call("dragonTiger", {"trade_date": date}, ttl=300)
+    result = await liangmai.call("lhb_daily", {"date": date}, ttl=300)
     return result

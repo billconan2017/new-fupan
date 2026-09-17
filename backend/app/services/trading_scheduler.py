@@ -1,6 +1,6 @@
 """APScheduler 定时调度器 — 4组Cron任务
 
-使用 BackgroundScheduler 随 FastAPI 生命周期启停。
+使用 AsyncIOScheduler 随 FastAPI 生命周期启停。
 仅 A股交易日执行，自动跳过周末、法定节假日。
 所有任务增加幂等校验 + 接口重试 + 异常日志。
 """
@@ -11,11 +11,23 @@ import time
 import traceback
 from datetime import datetime, date, timedelta
 from typing import Optional, Callable
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from sqlalchemy import text
 from app.database import engine
 from app.utils import is_trading_day
+from zoneinfo import ZoneInfo
+
+def _today():
+    return datetime.now(ZoneInfo("Asia/Shanghai")).date()
+
+def _successful(result):
+    if not isinstance(result, dict):
+        return False
+    if "ok" in result:
+        return result["ok"] is True and not result.get("dataMissing", False)
+    return bool(result) and all(_successful(v) for v in result.values())
+
 
 log = logging.getLogger("scheduler")
 
@@ -45,7 +57,7 @@ class TradingScheduler:
     """A股交易定时调度器"""
 
     def __init__(self):
-        self._scheduler = BackgroundScheduler(
+        self._scheduler = AsyncIOScheduler(
             timezone="Asia/Shanghai",
             job_defaults={"coalesce": True, "max_instances": 1},
         )
@@ -62,7 +74,7 @@ class TradingScheduler:
         # ── 盘前任务 09:14 ──
         self._scheduler.add_job(
             self._run_pre_market,
-            CronTrigger(hour=9, minute=14, day_of_week="mon-fri"),
+            CronTrigger(timezone="Asia/Shanghai", hour=9, minute=14, day_of_week="mon-fri"),
             id="pre_market",
             name="盘前任务-基础库更新",
             replace_existing=True,
@@ -71,7 +83,7 @@ class TradingScheduler:
         # ── 竞价任务 09:26 ──
         self._scheduler.add_job(
             self._run_auction,
-            CronTrigger(hour=9, minute=26, day_of_week="mon-fri"),
+            CronTrigger(timezone="Asia/Shanghai", hour=9, minute=26, day_of_week="mon-fri"),
             id="auction",
             name="竞价数据拉取",
             replace_existing=True,
@@ -81,7 +93,7 @@ class TradingScheduler:
         for hour, minute, label in [(11, 30, "半日"), (14, 30, "午后"), (15, 0, "收盘")]:
             self._scheduler.add_job(
                 self._run_intraday,
-                CronTrigger(hour=hour, minute=minute, day_of_week="mon-fri"),
+                CronTrigger(timezone="Asia/Shanghai", hour=hour, minute=minute, day_of_week="mon-fri"),
                 id=f"intraday_{hour}_{minute}",
                 name=f"盘中增量-{label}",
                 replace_existing=True,
@@ -91,12 +103,16 @@ class TradingScheduler:
         # ── 盘后汇总任务 15:40 ──
         self._scheduler.add_job(
             self._run_post_market,
-            CronTrigger(hour=15, minute=40, day_of_week="mon-fri"),
+            CronTrigger(timezone="Asia/Shanghai", hour=15, minute=40, day_of_week="mon-fri"),
             id="post_market",
             name="盘后汇总",
             replace_existing=True,
         )
 
+        self._scheduler.add_job(
+            self._run_evening, CronTrigger(timezone="Asia/Shanghai", hour=22, minute=0, day_of_week="mon-fri"),
+            id="evening", name="晚间补齐资金与复盘", replace_existing=True,
+        )
         self._scheduler.start()
         self._running = True
         log.info("交易调度器已启动 (APScheduler)")
@@ -121,7 +137,7 @@ class TradingScheduler:
         key = f"{job_id}:{trade_date}"
         self._last_runs[key] = {
             "date": trade_date,
-            "time": datetime.now().isoformat(),
+            "time": datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(),
             "result": str(result)[:300],
             "retries": retries,
         }
@@ -129,7 +145,7 @@ class TradingScheduler:
 
     def _record_error(self, job_id: str, error: str, tb: str = ""):
         self._errors[job_id] = {
-            "time": datetime.now().isoformat(),
+            "time": datetime.now(ZoneInfo("Asia/Shanghai")).isoformat(),
             "error": error[:300],
             "traceback": tb[:500],
         }
@@ -137,25 +153,21 @@ class TradingScheduler:
     # ── 交易日检查 ──
 
     def _is_trading_day(self) -> bool:
-        return is_trading_day(date.today())
+        return is_trading_day(_today())
 
     # ── 安全执行包装器 ──
 
-    def _run_safe(self, job_id: str, coro_func, *args, **kwargs):
+    async def _run_safe(self, job_id: str, coro_func, *args, **kwargs):
         """安全执行异步任务：交易日检查 + 幂等 + 重试 + 日志"""
         if not self._is_trading_day():
             log.info(f"[调度] 非交易日，跳过 {job_id}")
             return
 
-        trade_date = date.today().isoformat()
-        loop = asyncio.new_event_loop()
+        trade_date = _today().isoformat()
         try:
-            loop.run_until_complete(self._safe_execute(job_id, trade_date, coro_func, *args, **kwargs))
+            await self._safe_execute(job_id, trade_date, coro_func, *args, **kwargs)
         except Exception as e:
-            log.error(f"[调度] {job_id} 最终失败: {e}")
-            self._record_error(job_id, str(e), traceback.format_exc())
-        finally:
-            loop.close()
+            self._record_error(job_id, str(e))
 
     async def _safe_execute(self, job_id: str, trade_date: str, coro_func, *args, **kwargs):
         """带重试的安全执行"""
@@ -169,7 +181,10 @@ class TradingScheduler:
             try:
                 log.info(f"[调度] {job_id} 开始 ({trade_date}) 第{attempt+1}次")
                 result = await coro_func(*args, **kwargs)
+                if not _successful(result):
+                    raise RuntimeError("任务包含失败或缺失数据，详情见各数据源状态")
                 self._record_run(job_id, trade_date, result, retries=attempt)
+                self._errors.pop(job_id, None)
                 log.info(f"[调度] {job_id} 完成 (重试{attempt}次)")
                 return
             except Exception as e:
@@ -182,13 +197,13 @@ class TradingScheduler:
 
         # 全部重试失败
         self._record_error(job_id, str(last_error), traceback.format_exc())
-        self._record_run(job_id, trade_date, {"ok": False, "msg": str(last_error)}, retries=max_retries)
+        # Failed jobs remain retryable; do not mark the date as completed.
         log.error(f"[调度] {job_id} {max_retries}次重试全部失败")
 
     # ── 盘前任务 09:14 ──
 
-    def _run_pre_market(self):
-        self._run_safe("pre_market", self._async_pre_market)
+    async def _run_pre_market(self):
+        await self._run_safe("pre_market", self._async_pre_market)
 
     async def _async_pre_market(self):
         """盘前：更新 stock_basic + sector_tree 底库"""
@@ -217,12 +232,12 @@ class TradingScheduler:
 
     # ── 竞价任务 09:26 ──
 
-    def _run_auction(self):
-        self._run_safe("auction", self._async_auction)
+    async def _run_auction(self):
+        await self._run_safe("auction", self._async_auction)
 
-    async def _async_auction(self):
+    async def _async_auction(self, trade_date: str = None):
         """竞价：拉取个股竞价、板块竞价、封单排行、一字涨停"""
-        trade_date = date.today().isoformat()
+        trade_date = trade_date or _today().isoformat()
         log.info(f"[竞价] 开始: {trade_date}")
 
         from app.services.auction_service import fetch_all_auction
@@ -232,12 +247,12 @@ class TradingScheduler:
 
     # ── 盘中增量更新 ──
 
-    def _run_intraday(self, label: str = ""):
-        self._run_safe(f"intraday_{label}", self._async_intraday, label)
+    async def _run_intraday(self, label: str = ""):
+        await self._run_safe(f"intraday_{label}", self._async_intraday, label)
 
-    async def _async_intraday(self, label: str):
+    async def _async_intraday(self, label: str, trade_date: str = None):
         """盘中：涨跌停池、板块热力、个股资金流向"""
-        trade_date = date.today().isoformat()
+        trade_date = trade_date or _today().isoformat()
         log.info(f"[盘中-{label}] 开始: {trade_date}")
         results = {}
 
@@ -273,12 +288,15 @@ class TradingScheduler:
 
     # ── 盘后汇总任务 15:40 ──
 
-    def _run_post_market(self):
-        self._run_safe("post_market", self._async_post_market)
+    async def _run_evening(self):
+        await self._run_safe("evening", self._async_post_market)
 
-    async def _async_post_market(self):
+    async def _run_post_market(self):
+        await self._run_safe("post_market", self._async_post_market)
+
+    async def _async_post_market(self, trade_date: str = None):
         """盘后：龙虎榜、全板块资金、个股资金流水、复盘报告"""
-        trade_date = date.today().isoformat()
+        trade_date = trade_date or _today().isoformat()
         log.info(f"[盘后] 开始: {trade_date}")
         results = {}
 
@@ -352,19 +370,21 @@ class TradingScheduler:
     # ── 手动触发接口 ──
 
     async def trigger_post_market(self, trade_date: str = None) -> dict:
-        trade_date = trade_date or date.today().isoformat()
+        trade_date = trade_date or _today().isoformat()
         log.info(f"[手动触发] 盘后拉取: {trade_date}")
-        await self._async_post_market()
-        return {"ok": True, "date": trade_date}
+        result = await self._async_post_market(trade_date)
+        return {"ok": _successful(result), "date": trade_date, "results": result}
 
     async def trigger_fetch_all(self, trade_date: str = None) -> dict:
-        trade_date = trade_date or date.today().isoformat()
+        trade_date = trade_date or _today().isoformat()
         log.info(f"[手动触发] 全量拉取: {trade_date}")
-        await self._async_pre_market()
-        await self._async_auction()
-        await self._async_intraday("手动")
-        await self._async_post_market()
-        return {"ok": True, "date": trade_date}
+        results = {
+            "basic": await self._async_pre_market(),
+            "auction": await self._async_auction(trade_date),
+            "intraday": await self._async_intraday("手动", trade_date),
+            "post_market": await self._async_post_market(trade_date),
+        }
+        return {"ok": _successful(results), "date": trade_date, "results": results}
 
     async def backfill(self, start_date: str, end_date: str = None) -> dict:
         """批量回填历史交易日"""
@@ -381,13 +401,14 @@ class TradingScheduler:
             return {"ok": False, "msg": "无有效交易日"}
 
         log.info(f"[回填] 开始: {dates[0]} ~ {dates[-1]} ({len(dates)} 天)")
+        results = {}
         for trade_date in dates:
             log.info(f"[回填] === {trade_date} ===")
-            await self._async_post_market()
+            results[trade_date] = await self._async_post_market(trade_date)
             if trade_date != dates[-1]:
                 await asyncio.sleep(5)
 
-        return {"ok": True, "dates": dates}
+        return {"ok": _successful(results), "dates": dates, "results": results}
 
     # ── 状态查询 ──
 

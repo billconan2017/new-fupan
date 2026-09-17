@@ -10,10 +10,10 @@ log = logging.getLogger("pool.service")
 
 # 量脉池接口映射
 POOL_APIS = {
-    "limit_up": "pool_limit_up",
-    "limit_down": "pool_limit_down",
-    "broken_board": "pool_broken_board",
-    "strong": "pool_strong",
+    "limit_up": "stockpool_limit_up",
+    "limit_down": "stockpool_limit_down",
+    "broken_board": "stockpool_broken_board",
+    "strong": "stockpool_strong",
 }
 
 
@@ -35,7 +35,7 @@ async def fetch_pool(pool_type: str, trade_date: str = None) -> dict:
     trade_date = trade_date or date.today().isoformat()
 
     # 调用量脉
-    result = await liangmai.call(api, params={"date": trade_date}, ttl=0)
+    result = await liangmai.call(api, params={"trade_date": trade_date}, ttl=0)
     if not result.get("ok"):
         return {"ok": False, "msg": f"量脉调用失败: {result.get('msg')}", "api": api}
 
@@ -74,22 +74,22 @@ async def _insert_limit_up(trade_date: str, items: list) -> int:
         rows.append({
             "trade_date": trade_date,
             "code": code,
-            "name": s.get("mc", s.get("n", s.get("name", ""))),
-            "pct_chg": _float(s.get("zf", s.get("pc", s.get("pct_chg", 0)))),
+            "name": s.get("Mc", s.get("mc", s.get("n", s.get("name", "")))),
+            "pct_chg": _float(s.get("zf", s.get("pc", s.get("pct_chg")))),
             "limit_type": s.get("limit_type", s.get("type", "")),
             "limit_reason": s.get("limit_reason", s.get("reason", "")),
             "first_seal_time": s.get("fbt", s.get("first_seal_time", s.get("first_time", ""))),
             "last_seal_time": s.get("lbt", s.get("last_seal_time", s.get("last_time", ""))),
-            "broken_count": _int(s.get("zbc", s.get("broken_count", s.get("broken_num", 0)))),
-            "seal_amount": _float(s.get("zj", s.get("seal_amount", s.get("limit_amount", 0)))),
-            "turnover": _float(s.get("hs", s.get("turnover", 0))),
-            "amount": _float(s.get("cje", s.get("amount", 0))),
-            "flow_net": _float(s.get("flow_net", s.get("net_inflow", 0))),
-            "circulating_cap": _int(s.get("lt", s.get("circulating_cap", 0))),
-            "total_cap": _int(s.get("zsz", s.get("sz", s.get("total_cap", 0)))),
+            "broken_count": _int(s.get("zbc", s.get("broken_count", s.get("broken_num")))),
+            "seal_amount": _float(s.get("zj", s.get("seal_amount", s.get("limit_amount")))),
+            "turnover": _float(s.get("hs", s.get("turnover"))),
+            "amount": _float(s.get("cje", s.get("amount"))),
+            "flow_net": _float(s.get("flow_net", s.get("net_inflow"))),
+            "circulating_cap": _int(s.get("lt", s.get("circulating_cap"))),
+            "total_cap": _int(s.get("zsz", s.get("sz", s.get("total_cap")))),
             "industry": s.get("hy", s.get("industry", "")),
-            "consecutive": _int(s.get("lbc", s.get("consecutive", s.get("days", 0)))),
-            "price": _float(s.get("p", s.get("price", 0))),
+            "consecutive": _int(s.get("Lbc", s.get("lbc", s.get("consecutive", s.get("days"))))),
+            "price": _float(s.get("p", s.get("price"))),
         })
 
     if not rows:
@@ -119,17 +119,17 @@ async def _insert_limit_down(trade_date: str, items: list) -> int:
         rows.append({
             "trade_date": trade_date,
             "code": code,
-            "name": s.get("mc", s.get("n", s.get("name", ""))),
-            "pct_chg": _float(s.get("zf", s.get("pc", s.get("pct_chg", 0)))),
-            "amount": _float(s.get("cje", s.get("amount", 0))),
-            "turnover": _float(s.get("hs", s.get("turnover", 0))),
-            "price": _float(s.get("p", s.get("price", 0))),
-            "circulating_cap": _int(s.get("lt", s.get("circulating_cap", 0))),
-            "pe": _float(s.get("pe", 0)),
-            "consecutive": _int(s.get("lbc", s.get("consecutive", s.get("days", 0)))),
-            "seal_amount": _float(s.get("zj", s.get("seal_amount", 0))),
-            "board_amount": _float(s.get("fba", s.get("board_amount", 0))),
-            "broken_count": _int(s.get("zbc", s.get("broken_count", 0))),
+            "name": s.get("Mc", s.get("mc", s.get("n", s.get("name", "")))),
+            "pct_chg": _float(s.get("zf", s.get("pc", s.get("pct_chg")))),
+            "amount": _float(s.get("cje", s.get("amount"))),
+            "turnover": _float(s.get("hs", s.get("turnover"))),
+            "price": _float(s.get("p", s.get("price"))),
+            "circulating_cap": _int(s.get("lt", s.get("circulating_cap"))),
+            "pe": _float(s.get("pe")),
+            "consecutive": _int(s.get("Lbc", s.get("lbc", s.get("consecutive", s.get("days"))))),
+            "seal_amount": _float(s.get("zj", s.get("seal_amount"))),
+            "board_amount": _float(s.get("fba", s.get("board_amount"))),
+            "broken_count": _int(s.get("zbc", s.get("broken_count"))),
         })
 
     if not rows:
@@ -156,12 +156,12 @@ async def _insert_broken_board(trade_date: str, items: list) -> int:
         rows.append({
             "trade_date": trade_date,
             "code": code,
-            "name": s.get("mc", s.get("n", s.get("name", ""))),
-            "pct_chg": _float(s.get("zf", s.get("pc", s.get("pct_chg", 0)))),
+            "name": s.get("Mc", s.get("mc", s.get("n", s.get("name", "")))),
+            "pct_chg": _float(s.get("zf", s.get("pc", s.get("pct_chg")))),
             "break_time": s.get("zbsj", s.get("break_time", s.get("broken_time", ""))),
-            "amount": _float(s.get("cje", s.get("amount", 0))),
-            "turnover": _float(s.get("hs", s.get("turnover", 0))),
-            "price": _float(s.get("p", s.get("price", 0))),
+            "amount": _float(s.get("cje", s.get("amount"))),
+            "turnover": _float(s.get("hs", s.get("turnover"))),
+            "price": _float(s.get("p", s.get("price"))),
             "broken_count": _int(s.get("zbc", s.get("broken_count", s.get("broken_num", 1)))),
             "industry": s.get("hy", s.get("industry", "")),
         })
@@ -190,14 +190,14 @@ async def _insert_strong(trade_date: str, items: list) -> int:
         rows.append({
             "trade_date": trade_date,
             "code": code,
-            "name": s.get("mc", s.get("n", s.get("name", ""))),
-            "pct_chg": _float(s.get("zf", s.get("pc", s.get("pct_chg", 0)))),
-            "continuous_days": _int(s.get("lbc", s.get("continuous_days", s.get("days", 0)))),
-            "amount": _float(s.get("cje", s.get("amount", 0))),
-            "turnover": _float(s.get("hs", s.get("turnover", 0))),
-            "price": _float(s.get("p", s.get("price", 0))),
-            "volume_ratio": _float(s.get("lb", s.get("volume_ratio", 0))),
-            "amplitude": _float(s.get("zf", s.get("amplitude", 0))),
+            "name": s.get("Mc", s.get("mc", s.get("n", s.get("name", "")))),
+            "pct_chg": _float(s.get("zf", s.get("pc", s.get("pct_chg")))),
+            "continuous_days": _int(s.get("lbc", s.get("continuous_days", s.get("days")))),
+            "amount": _float(s.get("cje", s.get("amount"))),
+            "turnover": _float(s.get("hs", s.get("turnover"))),
+            "price": _float(s.get("p", s.get("price"))),
+            "volume_ratio": _float(s.get("lb", s.get("volume_ratio"))),
+            "amplitude": _float(s.get("zf", s.get("amplitude"))),
             "industry": s.get("hy", s.get("industry", "")),
         })
 

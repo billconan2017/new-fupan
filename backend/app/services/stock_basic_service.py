@@ -13,7 +13,7 @@ log = logging.getLogger("stock_basic.service")
 
 async def update_stock_basic() -> dict:
     """更新全市场个股基础信息（量脉唯一源）"""
-    result = await liangmai.call("stock_list", ttl=3600)
+    result = await liangmai.call("basic_stock_list", ttl=3600)
     if result.get("ok"):
         data = result.get("data", [])
         items = data if isinstance(data, list) else data.get("list", [])
@@ -34,12 +34,12 @@ async def _upsert_stock_basic(items: list, source: str = "unknown") -> int:
         code = code.split(".")[0]
         rows.append({
             "code": code,
-            "name": s.get("name", s.get("n", s.get("name", ""))),
+            "name": s.get("mc", s.get("name", s.get("n", ""))),
             "market": _detect_market(code),
             "industry": s.get("industry", s.get("industry_name", s.get("hy", ""))),
             "concept": s.get("concept", s.get("concept_name", "")),
-            "total_cap": _int(s.get("total_cap", s.get("total_mv", s.get("totalMarketValue", 0)))),
-            "circulating_cap": _int(s.get("circulating_cap", s.get("circ_mv", s.get("floatMarketValue", 0)))),
+            "total_cap": _int(s.get("total_cap", s.get("total_mv", s.get("totalMarketValue")))),
+            "circulating_cap": _int(s.get("circulating_cap", s.get("circ_mv", s.get("floatMarketValue")))),
             "list_date": s.get("list_date", s.get("startDate", "")),
             "is_st": bool(s.get("is_st", s.get("isST", False))),
             "status": "active",
@@ -56,10 +56,10 @@ async def _upsert_stock_basic(items: list, source: str = "unknown") -> int:
                 ON CONFLICT (code) DO UPDATE SET
                     name = EXCLUDED.name,
                     market = EXCLUDED.market,
-                    industry = EXCLUDED.industry,
-                    concept = EXCLUDED.concept,
-                    total_cap = EXCLUDED.total_cap,
-                    circulating_cap = EXCLUDED.circulating_cap,
+                    industry = COALESCE(NULLIF(EXCLUDED.industry, ''), stock_basic.industry),
+                    concept = COALESCE(NULLIF(EXCLUDED.concept, ''), stock_basic.concept),
+                    total_cap = COALESCE(EXCLUDED.total_cap, stock_basic.total_cap),
+                    circulating_cap = COALESCE(EXCLUDED.circulating_cap, stock_basic.circulating_cap),
                     is_st = EXCLUDED.is_st,
                     updated_at = NOW()
             """), r)
@@ -73,16 +73,16 @@ def _detect_market(code: str) -> str:
         return "sh"
     elif code.startswith(("0", "3")):
         return "sz"
-    elif code.startswith(("4", "8")):
+    elif code.startswith(("4", "8", "9")):
         return "bj"
     return "unknown"
 
 
 def _int(v) -> int:
     try:
-        return int(float(v)) if v else 0
+        return int(float(v)) if v is not None else None
     except (ValueError, TypeError):
-        return 0
+        return None
 
 
 # ── 查询接口 ──

@@ -1,5 +1,7 @@
 # FuPanX · A 股复盘 + 实盘辅助系统
 
+2026-09-17：已升级量脉路径式网关，新增请求合并、批量取数、日期校验和数据源状态页。详见 [迁移说明与验证边界](docs/LIANGMAI_MIGRATION_20260917.md)。首次部署使用独立数据库，先执行 `alembic upgrade head`，验收后再开启调度。
+
 自建的 A 股全链路复盘与盘中辅助平台：行情数据落地 → 复盘分析 → 竞价 / 盘中监控 → 策略选股 → 实盘交易，
 前后端分离，后端 **FastAPI + APScheduler + PostgreSQL + Redis**，前端 **Vue 3 + Vite + ECharts + Element Plus**。
 

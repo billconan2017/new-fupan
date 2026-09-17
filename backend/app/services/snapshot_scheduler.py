@@ -5,6 +5,9 @@ from typing import Optional
 from sqlalchemy import text
 from app.liangmai.client import liangmai
 from app.database import engine
+from app.liangmai.parsing import snapshot_records, source_date
+from app.utils import is_trading_day
+from zoneinfo import ZoneInfo
 
 log = logging.getLogger("snapshot.scheduler")
 
@@ -20,8 +23,8 @@ RETENTION_DAYS = 5
 
 def _in_trading_window() -> bool:
     """检查当前是否在交易时间"""
-    now = datetime.now()
-    if now.weekday() >= 5:  # 周末
+    now = datetime.now(ZoneInfo("Asia/Shanghai"))
+    if not is_trading_day(now.date()):  # 周末
         return False
     t = now.strftime("%H:%M")
     return any(start <= t <= end for start, end in TRADING_WINDOWS)
@@ -75,10 +78,10 @@ class SnapshotScheduler:
 
     async def _fetch_and_store(self):
         """拉取全市场快照并写入数据库"""
-        trade_date = date.today().isoformat()
-        snapshot_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        trade_date = datetime.now(ZoneInfo("Asia/Shanghai")).date().isoformat()
+        snapshot_at = datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S")
 
-        result = await liangmai.call("market_realtime_all_network", ttl=0)
+        result = await liangmai.call("market_snapshot_all", ttl=0)
         if not result.get("ok"):
             log.warning(f"快照拉取失败: {result.get('msg')}")
             self._error_count += 1
@@ -90,7 +93,7 @@ class SnapshotScheduler:
             return
 
         # data 可能是 list 或 dict
-        stocks = data if isinstance(data, list) else data.get("list", [])
+        stocks = [s for s in snapshot_records(data) if source_date(s.get("t")) == trade_date]
         if not stocks:
             log.warning("快照股票列表为空")
             return
@@ -109,14 +112,14 @@ class SnapshotScheduler:
         # 构建批量 INSERT
         rows = []
         for s in stocks:
-            code = s.get("c", s.get("code", ""))
+            code = s.get("code", "")
             if not code:
                 continue
             rows.append({
                 "trade_date": trade_date,
-                "snapshot_at": snapshot_at,
+                "snapshot_at": datetime.fromisoformat(snapshot_at) if isinstance(snapshot_at, str) else snapshot_at,
                 "code": code,
-                "name": s.get("n", s.get("name")),
+                "name": s.get("mc", s.get("n", s.get("name"))),
                 "price": _float(s.get("p", s.get("price"))),
                 "pct_chg": _float(s.get("pc", s.get("pct_chg"))),
                 "amount": _int(s.get("cje", s.get("amount"))),

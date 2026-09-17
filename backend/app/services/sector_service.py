@@ -31,38 +31,8 @@ async def fetch_sector_heatmap(trade_date: str = None) -> dict:
     if items:
         return {"ok": True, "date": trade_date, "count": len(items), "source": "db", "items": items}
 
-    # DB 无数据，尝试拉取
-    result = await liangmai.call("base_bk_flow_history", params={"tradeDate": trade_date}, ttl=0)
-    if not result.get("ok"):
-        result = await liangmai.call("board_flow_history", params={"date": trade_date}, ttl=0)
-    if not result.get("ok"):
-        return {"ok": False, "msg": f"拉取失败: {result.get('msg')}"}
-
-    data = result.get("data")
-    raw_items = data if isinstance(data, list) else data.get("list", data.get("items", []))
-    if not raw_items:
-        return {"ok": True, "count": 0, "items": []}
-
-    # 解析
-    parsed = []
-    for s in raw_items:
-        code = s.get("bkCode", s.get("code", s.get("sector_code", "")))
-        if not code:
-            continue
-        parsed.append({
-            "sector_code": code,
-            "sector_name": s.get("bkName", s.get("name", s.get("sector_name", ""))),
-            "change_pct": _float(s.get("changePct", s.get("change_pct", s.get("zf", 0)))),
-            "main_net": _int(s.get("mainNet", s.get("main_net", s.get("zljlr", 0)))),
-            "total_net": _int(s.get("totalNet", s.get("total_net", 0))),
-            "rise_count": _int(s.get("riseCount", s.get("rise_count", s.get("upNum", 0)))),
-            "fall_count": _int(s.get("fallCount", s.get("fall_count", s.get("downNum", 0)))),
-            "leader_code": s.get("leaderCode", s.get("leader_code", s.get("topCode", ""))),
-            "leader_name": s.get("leaderName", s.get("leader_name", s.get("topName", ""))),
-            "leader_pct": _float(s.get("leaderPct", s.get("leader_pct", s.get("topPct", 0)))),
-        })
-
-    return {"ok": True, "date": trade_date, "count": len(parsed), "source": "api", "items": parsed}
+    return {"ok": False, "date": trade_date, "dataMissing": True, "items": [],
+            "msg": "该日板块数据尚未入库，请运行板块采集；历史资金接口不提供涨跌热力字段"}
 
 
 # ───────────────── 板块轮动分析 ─────────────────
@@ -138,22 +108,22 @@ async def query_sector_rotation(days: int = 5, top_n: int = 20) -> dict:
 
 async def fetch_sector_tree() -> dict:
     """拉取板块树形结构（行业 + 概念）"""
-    result = await liangmai.call("sector_tree", ttl=3600)
+    result = await liangmai.call("sector_catalog", ttl=3600)
     if not result.get("ok"):
         return {"ok": False, "msg": result.get("msg")}
 
-    data = result.get("data")
+    data = result.get("data") or {}
     items = data if isinstance(data, list) else data.get("list", data.get("items", []))
     return {"ok": True, "count": len(items) if items else 0, "items": items or []}
 
 
 async def fetch_sector_stocks(sector_code: str) -> dict:
     """拉取板块成分股"""
-    result = await liangmai.call("sector_constituents", params={"bkCode": sector_code}, ttl=300)
+    result = await liangmai.call("sector_members", params={"sector_code": sector_code}, ttl=300)
     if not result.get("ok"):
         return {"ok": False, "msg": result.get("msg")}
 
-    data = result.get("data")
+    data = result.get("data") or {}
     items = data if isinstance(data, list) else data.get("list", data.get("items", []))
     return {"ok": True, "sector_code": sector_code, "count": len(items) if items else 0, "items": items or []}
 
@@ -163,11 +133,11 @@ async def fetch_sector_stocks(sector_code: str) -> dict:
 async def fetch_sector_auction(trade_date: str = None) -> dict:
     """拉取板块竞价热度（量脉 base_bkjjzq）"""
     trade_date = trade_date or date.today().isoformat()
-    result = await liangmai.call("base_bkjjzq", params={"tradeDate": trade_date}, ttl=0)
+    result = await liangmai.call("auction_morning_sector_pro", params={"tradeDate": trade_date}, ttl=0)
     if not result.get("ok"):
         return {"ok": False, "msg": result.get("msg")}
 
-    data = result.get("data")
+    data = result.get("data") or {}
     items = data if isinstance(data, list) else data.get("list", data.get("items", []))
     return {"ok": True, "date": trade_date, "count": len(items) if items else 0, "items": items or []}
 

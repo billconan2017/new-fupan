@@ -5,6 +5,7 @@ from typing import Optional
 from sqlalchemy import text
 from app.database import engine
 from app.liangmai.client import liangmai
+from app.liangmai.parsing import records, source_date, number
 
 log = logging.getLogger("capital.service")
 
@@ -43,7 +44,7 @@ async def fetch_capital_flow(trade_date: str = None) -> dict:
     rows = []
     failed = 0
     for code in target_codes:
-        result = await liangmai.call("base_code_flow", params={"ts_code": code}, ttl=300)
+        result = await liangmai.call("flow_stock_history", params={"ts_code": code, "st": trade_date.replace("-", ""), "et": trade_date.replace("-", "")}, ttl=300)
         if not result.get("ok"):
             failed += 1
             continue
@@ -51,109 +52,77 @@ async def fetch_capital_flow(trade_date: str = None) -> dict:
         if not data:
             continue
         # data 可能是 list 或 dict
-        items = data if isinstance(data, list) else [data]
+        items = records(data)
         for item in items:
+            if source_date(item.get("t")) != trade_date:
+                continue
+            large = number(item.get("jlrddcje"))
+            super_large = number(item.get("jlrcdcje"))
             rows.append({
                 "trade_date": trade_date,
                 "code": code,
                 "name": item.get("name", item.get("n", "")),
-                "main_net": _int(item.get("main_net", item.get("mainNet", item.get("zljlr", 0)))),
-                "super_large_net": _int(item.get("super_large_net", item.get("superLargeNet", item.get("cddlr", 0)))),
-                "large_net": _int(item.get("large_net", item.get("largeNet", item.get("ddlr", 0)))),
-                "medium_net": _int(item.get("medium_net", item.get("mediumNet", item.get("zdlr", 0)))),
-                "small_net": _int(item.get("small_net", item.get("smallNet", item.get("xdlr", 0)))),
-                "main_pct": _float(item.get("main_pct", item.get("mainPct", 0))),
+                "main_net": int(large + super_large) if large is not None and super_large is not None else None,
+                "super_large_net": _int(super_large), "large_net": _int(large),
+                "medium_net": _int(item.get("jlrzdcje")), "small_net": _int(item.get("jlrxdcje")),
+                "main_pct": None,
             })
 
     if not rows:
-        return {"ok": True, "count": 0, "failed": failed, "msg": "无资金流数据"}
+        return {"ok": False, "dataMissing": True, "count": 0, "failed": failed, "msg": "请求日期暂无资金流数据"}
 
     # 写入数据库
     async with engine.begin() as conn:
-        await conn.execute(text("DELETE FROM capital_flow WHERE trade_date = :d"), {"d": trade_date})
         await conn.execute(text("""
             INSERT INTO capital_flow (trade_date, code, name, main_net, super_large_net, large_net, medium_net, small_net, main_pct)
             VALUES (:trade_date, :code, :name, :main_net, :super_large_net, :large_net, :medium_net, :small_net, :main_pct)
+            ON CONFLICT (trade_date, code) DO UPDATE SET
+                main_net=EXCLUDED.main_net, super_large_net=EXCLUDED.super_large_net,
+                large_net=EXCLUDED.large_net, medium_net=EXCLUDED.medium_net, small_net=EXCLUDED.small_net
         """), rows)
 
     log.info(f"个股资金流写入: {len(rows)} 条, 失败 {failed}")
-    return {"ok": True, "count": len(rows), "failed": failed, "date": trade_date}
+    return {"ok": failed == 0 and len(rows) == len(target_codes), "count": len(rows), "failed": failed, "date": trade_date, "dataMissing": len(rows) != len(target_codes)}
 
 
 # ───────────────── 板块资金流向 ─────────────────
 
 async def fetch_sector_flow(trade_date: str = None) -> dict:
-    """拉取板块资金流向 → sector_flow
-
-    修复：自动从 sector_tree 表读取合法 bkCode 列表，
-    补齐必填入参，根除 422 参数缺失报错。
-    """
+    """Use official BK codes; history takes one bkCode, never invented bkCodes."""
     trade_date = trade_date or date.today().isoformat()
-
-    # 先从 sector_tree 读取合法板块代码
-    bk_codes = []
-    try:
-        async with engine.begin() as conn:
-            result = await conn.execute(text(
-                "SELECT sector_code FROM sector_tree WHERE source IN ('881','884') LIMIT 200"))
-            bk_codes = [row[0] for row in result]
-    except Exception:
-        pass
-
-    # 调用量脉，带上合法 bkCode 参数
-    params = {"tradeDate": trade_date}
-    if bk_codes:
-        params["bkCodes"] = "|".join(bk_codes[:50])  # 批量传码，防止 422
-
-    result = await liangmai.call("base_bk_flow_history", params=params, ttl=0)
-    if not result.get("ok"):
-        # 尝试备选接口
-        result = await liangmai.call("board_flow_history", params={"date": trade_date}, ttl=0)
-    if not result.get("ok"):
-        return {"ok": False, "msg": f"量脉调用失败: {result.get('msg')}"}
-
-    data = result.get("data")
-    if not data:
-        return {"ok": True, "count": 0, "msg": "无板块资金流数据"}
-
-    items = data if isinstance(data, list) else data.get("list", data.get("items", []))
-    if not items:
-        return {"ok": True, "count": 0}
-
-    rows = []
-    for s in items:
-        code = s.get("bkCode", s.get("code", s.get("sector_code", "")))
+    catalog = await liangmai.call("sector_plate_code", ttl=3600)
+    if not catalog.get("ok"):
+        return catalog
+    sectors = records(catalog.get("data"))
+    if not sectors:
+        return {"ok": False, "dataMissing": True, "msg": "量脉板块代码目录暂无数据", "count": 0}
+    rows, missing = [], []
+    for sector in sectors:
+        code = sector.get("plateCode")
         if not code:
             continue
-        rows.append({
-            "trade_date": trade_date,
-            "sector_code": code,
-            "sector_name": s.get("bkName", s.get("name", s.get("sector_name", ""))),
-            "main_net": _int(s.get("mainNet", s.get("main_net", s.get("zljlr", 0)))),
-            "retail_net": _int(s.get("retailNet", s.get("retail_net", s.get("shlr", 0)))),
-            "total_net": _int(s.get("totalNet", s.get("total_net", s.get("net_inflow", 0)))),
-            "change_pct": _float(s.get("changePct", s.get("change_pct", s.get("zf", 0)))),
-            "rise_count": _int(s.get("riseCount", s.get("rise_count", s.get("upNum", 0)))),
-            "fall_count": _int(s.get("fallCount", s.get("fall_count", s.get("downNum", 0)))),
-            "leader_code": s.get("leaderCode", s.get("leader_code", s.get("topCode", ""))),
-            "leader_name": s.get("leaderName", s.get("leader_name", s.get("topName", ""))),
-            "leader_pct": _float(s.get("leaderPct", s.get("leader_pct", s.get("topPct", 0)))),
-        })
-
-    if not rows:
-        return {"ok": True, "count": 0}
-
-    async with engine.begin() as conn:
-        await conn.execute(text("DELETE FROM sector_flow WHERE trade_date = :d"), {"d": trade_date})
-        await conn.execute(text("""
-            INSERT INTO sector_flow (trade_date, sector_code, sector_name, main_net, retail_net, total_net,
-                change_pct, rise_count, fall_count, leader_code, leader_name, leader_pct)
-            VALUES (:trade_date, :sector_code, :sector_name, :main_net, :retail_net, :total_net,
-                :change_pct, :rise_count, :fall_count, :leader_code, :leader_name, :leader_pct)
-        """), rows)
-
-    log.info(f"板块资金流写入: {len(rows)} 条")
-    return {"ok": True, "count": len(rows), "date": trade_date}
+        response = await liangmai.call("flow_sector_history", {"bkCode": code}, ttl=300)
+        item = next((r for r in records(response.get("data")) if source_date(r.get("time")) == trade_date), None)
+        if not response.get("ok") or item is None:
+            missing.append(code)
+            continue
+        rows.append({"trade_date": trade_date, "sector_code": code, "sector_name": sector.get("name"),
+                     "main_net": _int(item.get("mainAmount")), "retail_net": _int(item.get("minAmount")),
+                     "total_net": None, "change_pct": None, "rise_count": None, "fall_count": None,
+                     "leader_code": None, "leader_name": None, "leader_pct": None})
+    if rows:
+        async with engine.begin() as conn:
+            # Replace only successfully fetched sectors, preserving failed sectors' existing history.
+            for row in rows:
+                await conn.execute(text("DELETE FROM sector_flow WHERE trade_date=:trade_date AND sector_code=:sector_code"), row)
+            await conn.execute(text("""
+                INSERT INTO sector_flow (trade_date, sector_code, sector_name, main_net, retail_net, total_net,
+                    change_pct, rise_count, fall_count, leader_code, leader_name, leader_pct)
+                VALUES (:trade_date, :sector_code, :sector_name, :main_net, :retail_net, :total_net,
+                    :change_pct, :rise_count, :fall_count, :leader_code, :leader_name, :leader_pct)
+            """), rows)
+    return {"ok": bool(rows) and not missing, "date": trade_date, "count": len(rows),
+            "dataMissing": bool(missing) or not rows, "missingCodes": missing}
 
 
 async def fetch_all_capital(trade_date: str = None) -> dict:

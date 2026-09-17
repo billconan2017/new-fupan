@@ -28,14 +28,16 @@ async def lifespan(app: FastAPI):
     log.info("Liangmai client ready")
     try:
         from app.services.snapshot_scheduler import snapshot_scheduler
-        await snapshot_scheduler.start()
+        if settings.scheduler_enabled:
+            await snapshot_scheduler.start()
         log.info("Snapshot scheduler started")
     except Exception as e:
         log.warning(f"Snapshot scheduler failed: {e}")
     # 启动交易调度器 (APScheduler)
     try:
         from app.services.trading_scheduler import trading_scheduler
-        trading_scheduler.start()
+        if settings.scheduler_enabled:
+            trading_scheduler.start()
         log.info("Trading scheduler started")
     except Exception as e:
         log.warning(f"Trading scheduler failed: {e}")
@@ -77,6 +79,8 @@ app.add_middleware(
 )
 
 app.include_router(health.router)
+from app.routers import data_quality
+app.include_router(data_quality.router)
 app.include_router(snapshot.router)
 app.include_router(fupan.router)
 app.include_router(auction.router)
@@ -99,17 +103,19 @@ from fastapi.responses import FileResponse
 from starlette.requests import Request
 from starlette.responses import Response
 
-# ... existing code ...
+_project_root = Path(__file__).resolve().parent.parent.parent
+_dist = _project_root / "dist"
+if not (_dist / "index.html").exists():
+    _dist = _project_root / "frontend" / "dist"
+
 
 @app.get("/")
 async def root():
-    dist = Path(__file__).resolve().parent.parent.parent / "dist"
-    if dist.exists():
-        return FileResponse(dist / "index.html")
+    if (_dist / "index.html").exists():
+        return FileResponse(_dist / "index.html")
     return {"app": settings.app_name, "version": settings.app_version}
 
-# 挂载前端静态文件 (生产模式)
-_dist = Path(__file__).resolve().parent.parent.parent / "dist"
+
 if _dist.exists():
     app.mount("/assets", StaticFiles(directory=_dist / "assets"), name="assets")
 

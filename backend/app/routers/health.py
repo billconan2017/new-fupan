@@ -6,6 +6,7 @@ from app.cache import cache
 router = APIRouter(tags=["system"])
 
 
+@router.get("/api/health")
 @router.get("/health")
 async def health():
     return {"status": "ok", "version": "1.0.0"}
@@ -13,8 +14,8 @@ async def health():
 
 @router.get("/health/liangmai")
 async def liangmai_health():
-    result = await liangmai.call("stock_list", {"dm": "000001"}, ttl=300)
-    return {"ok": result["ok"], "api": "stock_list", "meta": result.get("_meta")}
+    result = await liangmai.call("basic_stock_list", ttl=300)
+    return {"ok": result["ok"], "api": "basic_stock_list", "meta": result.get("_meta")}
 
 
 @router.get("/health/redis")
@@ -40,7 +41,7 @@ async def full_health():
     from app.services.snapshot_scheduler import snapshot_scheduler
 
     # 量脉
-    lm_result = await liangmai.call("stock_list", {"dm": "000001"}, ttl=300)
+    lm_result = await liangmai.call("basic_stock_list", ttl=300)
     # Redis
     redis_ok = False
     try:

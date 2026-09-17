@@ -12,7 +12,7 @@ log = logging.getLogger("sector_tree.service")
 
 async def update_sector_tree() -> dict:
     """更新板块行业树（量脉唯一源）"""
-    result = await liangmai.call("sector_tree", ttl=3600)
+    result = await liangmai.call("sector_catalog", ttl=3600)
     if result.get("ok"):
         data = result.get("data", [])
         items = data if isinstance(data, list) else data.get("list", [])

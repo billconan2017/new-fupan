@@ -78,6 +78,12 @@
             <span class="nav-icon">💼</span><span>实盘组合</span>
           </div>
         </router-link>
+        <div class="sidebar-label">系统</div>
+        <router-link to="/admin/data-sources" custom v-slot="{ isActive, navigate }">
+          <div class="nav-item" :class="{ active: isActive }" @click="navigate">
+            <span class="nav-icon">🗄️</span><span>数据源状态</span>
+          </div>
+        </router-link>
       </aside>
 
       <!-- 主体内容 -->
@@ -119,6 +125,7 @@ const mainlineFilter = ref('')
 const cachedViews = ['Dashboard', 'Pools', 'Auction', 'Sector', 'Dragon', 'Capital', 'Review', 'Strategy', 'LiveTrading']
 
 const pageTitles = {
+  '/admin/data-sources': ['数据源状态', '接口调用 · 数据日期 · 采集任务'],
   '/': ['大盘总览', '市场情绪 · 涨跌统计 · 复盘评分'],
   '/auction': ['竞价数据', '板块竞价 · 个股竞价 · 封单排行'],
   '/pools': ['涨跌停池', '涨停 · 跌停 · 炸板 · 强势股'],

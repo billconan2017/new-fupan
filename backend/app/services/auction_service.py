@@ -5,6 +5,7 @@ from typing import Optional
 from sqlalchemy import text
 from app.database import engine
 from app.liangmai.client import liangmai
+from app.liangmai.parsing import records
 
 log = logging.getLogger("auction.service")
 
@@ -12,12 +13,12 @@ log = logging.getLogger("auction.service")
 async def fetch_auction_sectors(trade_date: str = None) -> dict:
     """拉取板块竞价数据 → auction_sector"""
     trade_date = trade_date or date.today().isoformat()
-    result = await liangmai.call("base_bkjj", params={"startDate": trade_date, "endDate": trade_date}, ttl=0)
+    result = await liangmai.call("auction_morning_sector", params={"startDate": trade_date, "endDate": trade_date, "type": "1"}, ttl=0)
     if not result.get("ok"):
         return {"ok": False, "msg": result.get("msg")}
 
     data = result.get("data")
-    items = data if isinstance(data, list) else data.get("list", data.get("items", []))
+    items = records(data)
     if not items:
         return {"ok": True, "count": 0}
 
@@ -30,10 +31,10 @@ async def fetch_auction_sectors(trade_date: str = None) -> dict:
             "trade_date": trade_date,
             "sector_code": code,
             "sector_name": s.get("bkName", s.get("name", s.get("sector_name", ""))),
-            "pct_chg": _float(s.get("changePct", s.get("change_pct", s.get("zf", 0)))),
-            "amount": _float(s.get("amount", s.get("cje", 0))),
-            "rise_count": _int(s.get("riseCount", s.get("rise_count", s.get("upNum", 0)))),
-            "fall_count": _int(s.get("fallCount", s.get("fall_count", s.get("downNum", 0)))),
+            "pct_chg": _float(s.get("changePct", s.get("change_pct", s.get("zf")))),
+            "amount": _float(s.get("amount", s.get("cje"))),
+            "rise_count": _int(s.get("riseCount", s.get("rise_count", s.get("upNum")))),
+            "fall_count": _int(s.get("fallCount", s.get("fall_count", s.get("downNum")))),
         })
 
     if not rows:
@@ -53,12 +54,12 @@ async def fetch_auction_sectors(trade_date: str = None) -> dict:
 async def fetch_auction_stocks(trade_date: str = None) -> dict:
     """拉取个股竞价数据 → auction_stock"""
     trade_date = trade_date or date.today().isoformat()
-    result = await liangmai.call("base_jjqc", params={"tradeDate": trade_date, "period": "1", "type": "1"}, ttl=0)
+    result = await liangmai.call("auction_morning_grab_amount", params={"tradeDate": trade_date, "period": "0", "type": "1"}, ttl=0)
     if not result.get("ok"):
         return {"ok": False, "msg": result.get("msg")}
 
     data = result.get("data")
-    items = data if isinstance(data, list) else data.get("list", data.get("items", []))
+    items = records(data)
     if not items:
         return {"ok": True, "count": 0}
 
@@ -71,11 +72,11 @@ async def fetch_auction_stocks(trade_date: str = None) -> dict:
             "trade_date": trade_date,
             "code": code,
             "name": s.get("name", s.get("n", "")),
-            "open_price": _float(s.get("openPrice", s.get("open", s.get("open_price", 0)))),
-            "pre_close": _float(s.get("preClose", s.get("pre_close", s.get("yc", 0)))),
-            "pct_chg": _float(s.get("changePct", s.get("change_pct", s.get("zf", s.get("pc", 0))))),
-            "amount": _float(s.get("amount", s.get("cje", s.get("auction_amount", 0)))),
-            "volume": _int(s.get("volume", s.get("v", s.get("auction_volume", 0)))),
+            "open_price": _float(s.get("openPrice", s.get("open", s.get("open_price")))),
+            "pre_close": _float(s.get("preClose", s.get("pre_close", s.get("yc")))),
+            "pct_chg": _float(s.get("changePct", s.get("change_pct", s.get("zf", s.get("pc"))))),
+            "amount": _float(s.get("amount", s.get("cje", s.get("openAmt")))),
+            "volume": _int(s.get("volume", s.get("v", s.get("auction_volume")))),
         })
 
     if not rows:
@@ -97,21 +98,23 @@ async def fetch_auction_tail(trade_date: str = None) -> dict:
     trade_date = trade_date or date.today().isoformat()
 
     tail_apis = {
-        "wt": "base_jjqc_tail_wt",
-        "cje": "base_jjqc_tail_cje",
-        "close": "base_jjqc_tail_close",
-        "zf": "base_jjqc_tail_zf",
+        "wt": "auction_tail_grab_amount",
+        "cje": "auction_tail_grab_turnover",
+        "close": "auction_tail_grab_close",
+        "zf": "auction_tail_grab_change",
     }
 
     all_rows = []
+    failed_types = []
     for tail_type, api in tail_apis.items():
-        result = await liangmai.call(api, params={"tradeDate": trade_date, "period": "1", "type": "1"}, ttl=0)
+        result = await liangmai.call(api, params={"tradeDate": trade_date, "period": "1", "type": {"wt": "1", "cje": "2", "close": "3", "zf": "4"}[tail_type]}, ttl=0)
         if not result.get("ok"):
+            failed_types.append(tail_type)
             log.warning(f"封单 {tail_type} 拉取失败: {result.get('msg')}")
             continue
 
         data = result.get("data")
-        items = data if isinstance(data, list) else data.get("list", data.get("items", []))
+        items = records(data)
         if not items:
             continue
 
@@ -124,33 +127,34 @@ async def fetch_auction_tail(trade_date: str = None) -> dict:
                 "code": code,
                 "name": s.get("name", s.get("n", "")),
                 "tail_type": tail_type,
-                "value": _float(s.get("amount", s.get("value", s.get("cje", 0)))),
+                "value": _float(s.get({"wt": "qcwtje", "cje": "qccje", "close": "closeAmt", "zf": "qczf"}[tail_type])),
                 "rank": _int(s.get("rank", rank)),
             })
 
     if not all_rows:
-        return {"ok": True, "count": 0}
+        return {"ok": not failed_types, "count": 0, "dataMissing": True, "failedTypes": failed_types}
 
     async with engine.begin() as conn:
-        await conn.execute(text("DELETE FROM auction_tail WHERE trade_date = :d"), {"d": trade_date})
+        for tail_type in {r["tail_type"] for r in all_rows}:
+            await conn.execute(text("DELETE FROM auction_tail WHERE trade_date = :d AND tail_type=:t"), {"d": trade_date, "t": tail_type})
         await conn.execute(text("""
             INSERT INTO auction_tail (trade_date, code, name, tail_type, value, rank)
             VALUES (:trade_date, :code, :name, :tail_type, :value, :rank)
         """), all_rows)
 
     log.info(f"竞价封单写入: {len(all_rows)} 条")
-    return {"ok": True, "count": len(all_rows), "date": trade_date}
+    return {"ok": not failed_types, "count": len(all_rows), "date": trade_date, "failedTypes": failed_types}
 
 
 async def fetch_auction_yizi(trade_date: str = None) -> dict:
     """拉取一字涨停列表 → auction_yizi"""
     trade_date = trade_date or date.today().isoformat()
-    result = await liangmai.call("jjyizi_list", params={"tradeDate": trade_date, "period": "1", "type": "1"}, ttl=0)
+    result = await liangmai.call("auction_one_word_limit", params={"tradeDate": trade_date}, ttl=0)
     if not result.get("ok"):
         return {"ok": False, "msg": result.get("msg")}
 
     data = result.get("data")
-    items = data if isinstance(data, list) else data.get("list", data.get("items", []))
+    items = records(data)
     if not items:
         return {"ok": True, "count": 0}
 
@@ -163,8 +167,8 @@ async def fetch_auction_yizi(trade_date: str = None) -> dict:
             "trade_date": trade_date,
             "code": code,
             "name": s.get("name", s.get("n", "")),
-            "pct_chg": _float(s.get("changePct", s.get("change_pct", s.get("zf", s.get("pc", 0))))),
-            "amount": _float(s.get("amount", s.get("cje", 0))),
+            "pct_chg": _float(s.get("changePct", s.get("change_pct", s.get("zf", s.get("pc"))))),
+            "amount": _float(s.get("amount", s.get("cje"))),
         })
 
     if not rows:
