@@ -200,15 +200,21 @@ async def local_fallback(api,day,failure):
 
 async def update_job(job,results,total,finished=False):
     async with engine.begin() as c:
-        await c.execute(text('''UPDATE wb_jobs SET progress=:p, results=CAST(:r AS JSONB),status=:s,
+        await c.execute(text('''UPDATE wb_jobs SET progress=:p,total=:total, results=CAST(:r AS JSONB),status=:s,
             finished_at=CASE WHEN :done THEN now() ELSE NULL END WHERE id=:id'''),
-            {'p':len(results),'r':json.dumps(results,ensure_ascii=False),'s':'done' if finished else 'running','done':finished,'id':job})
+            {'p':len(results),'total':total,'r':json.dumps(results,ensure_ascii=False),'s':'done' if finished else 'running','done':finished,'id':job})
 
 async def collect(job,day,stage,codes):
     results=[]
     async with COLLECT_LOCK:
         try:
-            if stage=='history':
+            extra_total=0
+            if stage=='execution':
+                calls=[]
+                for code in codes:
+                    compact=day.replace('-','')
+                    calls.extend([('minute_5:'+code,'kline_history',{'full_code':code,'interval':'5','cq':'n','st':compact+'093000','et':compact+'100000','lt':20}),('limit_prices:'+code,'kline_stop_price_history',{'full_code':code,'st':compact,'et':compact,'lt':5})])
+            elif stage=='history':
                 ev=await evidence(day);cal=(ev.get('basic_trade_calendar',{}).get('payload') or [])+(ev.get('calendar_previous_year',{}).get('payload') or [])
                 previous=max((source_date(d) for d in cal if source_date(d) and source_date(d)<day),default=None)
                 if not previous:raise ValueError('请先采集交易日历')
@@ -236,18 +242,21 @@ async def collect(job,day,stage,codes):
                 r=await liangmai.call(api,params,ttl=0)
                 if not r.get('ok'):r=await local_fallback(key,day,r)
                 item=await save_evidence(key,day,r);results.append(item)
-                await update_job(job,results,len(calls))
+                await update_job(job,results,len(calls)+extra_total)
                 if stage=='pre' and api=='basic_trade_calendar' and r.get('ok'):
-                    prev=max((source_date(d) for d in r.get('data',[]) if source_date(d) and source_date(d)<day),default=None)
+                    calendar_ev=await evidence(day)
+                    calendar_rows=r.get('data',[])+(calendar_ev.get('calendar_previous_year',{}).get('payload') or [])
+                    prev=max((source_date(d) for d in calendar_rows if source_date(d) and source_date(d)<day),default=None)
                     if prev:
+                        extra_total+=5
+                        await update_job(job,results,len(calls)+extra_total)
                         for base_api in ('stockpool_limit_up','stockpool_limit_down','stockpool_broken_board','stockpool_strong','lhb_daily'):
                             base=await liangmai.call(base_api,{'date' if base_api=='lhb_daily' else 'trade_date':prev},ttl=3600)
                             if not base.get('ok'):base=await local_fallback(base_api,prev,base)
                             base_item=await save_evidence(base_api,prev,base)
                             base_item['date']=prev;results.append(base_item)
-                            async with engine.begin() as c:await c.execute(text('UPDATE wb_jobs SET total=total+1 WHERE id=:id'),{'id':job})
-                            await update_job(job,results,0)
-            await update_job(job,results,len(calls),True)
+                            await update_job(job,results,len(calls)+extra_total)
+            await update_job(job,results,len(calls)+extra_total,True)
         except Exception:
             # Do not persist raw exception text (may contain URLs or connection details).
             results.append({'status':'error','message':'采集未完成，请检查数据源状态、日期和数据库'})

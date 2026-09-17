@@ -161,3 +161,27 @@ async def test_preparation_requires_sources_and_freezes_t1_without_fabricated_tr
             assert row['evidence']['window']['earliest_sell_date']=='2025-06-16'
             assert row['evidence']['reconstruction'] and row['change_since_saved'] is None
     finally:await engine.dispose()
+
+async def test_collection_progress_includes_previous_day_and_execution_gaps(monkeypatch):
+    from app.services.workbench import collect,evidence
+    try:
+        async def vendor(api,params=None,ttl=0):
+            if api=='basic_trade_calendar':data=['20260916','20260917','20260918']
+            elif api=='kline_stop_price_history':data=[{'t':'2026-09-14','h':11,'l':9}]
+            else:data=[]
+            return {'ok':True,'data':data,'msg':'ok'}
+        monkeypatch.setattr(liangmai,'call',vendor)
+        async with engine.begin() as c:
+            for id,stage in [('progress-a','pre'),('progress-b','execution')]:
+                await c.execute(text("INSERT INTO wb_jobs(id,status,stage,trade_date,total) VALUES (:id,'running',:stage,'2026-09-17',0)"),{'id':id,'stage':stage})
+        await collect('progress-a','2026-09-17','pre',[])
+        async with engine.connect() as c:
+            r=(await c.execute(text("SELECT progress,total,status,results FROM wb_jobs WHERE id='progress-a'"))).first()
+        assert r[0]==r[1]==len(r[3])==9 and r[2]=='done'
+        await collect('progress-b','2026-09-17','execution',['000001'])
+        from app.services.readiness import assess
+        items={i['key']:i for i in assess('2026-09-17',await evidence('2026-09-17'))['items']}
+        assert items['limits']['status']=='missing'
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=__import__('app.main',fromlist=['app']).app),base_url='http://test') as client:
+            assert (await client.post('/api/workbench/collect',json={'day':'2026-09-17','stage':'execution','codes':[]})).status_code==422
+    finally:await engine.dispose()

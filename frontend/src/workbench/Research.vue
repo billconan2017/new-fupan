@@ -2,7 +2,8 @@
  <section class="wb-hero"><div><div class="wb-eyebrow">A-SHARE / T+1 RESEARCH</div><h2>今晚缩小范围，明早确认强弱。</h2><p>盘后热点与龙虎榜 → 次日竞价核对 → 9:30—10:00观察入场 → 遵守 T+1 退出。候选依据、历史缺口和成交假设分别保留。</p></div></section>
  <div class="wb-panel-title"><div class="wb-mode"><button :class="{active:tab==='prepare'}" @click="tab='prepare'">次日备选</button><button :class="{active:tab==='recent'}" @click="tab='recent'">近五日回溯</button><button :class="{active:tab==='study'}" @click="tab='study'">持有期研究</button><button :class="{active:tab==='audit'}" @click="tab='audit'">完整接口审计</button></div><button class="wb-button" @click="load">刷新研究结果</button></div>
  <p v-if="error" class="wb-notice error" role="alert">{{ error }}</p><p v-if="message" class="wb-notice" role="status">{{ message }}</p>
- <template v-if="tab==='prepare'">
+ <div v-if="loading && tab==='prepare'" class="wb-skeleton" role="status">正在读取所选日期的盘后证据…</div>
+ <template v-if="tab==='prepare' && !loading">
  <section class="wb-metrics"><article><label>盘后信号日</label><strong>{{ day }}</strong><small>{{ preparation?.provisional?'盘后尚未完成，临时结果':'证据按所选日期隔离' }}</small></article><article><label>计划买入日</label><strong>{{ preparation?.window.buy_date || '日历缺失' }}</strong><small>次一交易日开盘后确认</small></article><article><label>最早卖出日</label><strong>{{ preparation?.window.earliest_sell_date || '日历缺失' }}</strong><small>不能买入当天卖出；周末、休市跳过</small></article><article><label>合并去重候选</label><strong>{{ preparation?.rows.length ?? '—' }}</strong><small>涨停池 ∪ 强势池 ∪ 龙虎榜</small></article></section>
  <section class="wb-panel"><div class="wb-panel-title"><div><h3>资金关注与热点交集</h3><p>{{ preparation?.note }}</p></div><button class="wb-button primary" :disabled="busy" @click="$emit('collect','review')">补齐当日盘后证据</button></div>
  <div class="wb-tags"><span v-for="s in preparation?.sources || []" :key="s.api" :class="['wb-status','status-'+s.status]">{{ s.name }} · {{ status(s.status) }} · {{ s.rows }}条</span></div>
@@ -27,12 +28,12 @@ import {ref,computed,watch} from 'vue'
 import axios from 'axios'
 import RecentReplay from './RecentReplay.vue'
 const props=defineProps({day:String,mode:String,busy:Boolean});defineEmits(['collect'])
-const tab=ref('prepare'),preparation=ref(null),audit=ref(null),study=ref(null),error=ref(''),message=ref(''),search=ref(''),limit=ref(30),auditFilter=ref('all');let seq=0
+const tab=ref('prepare'),preparation=ref(null),audit=ref(null),study=ref(null),error=ref(''),loading=ref(false),message=ref(''),search=ref(''),limit=ref(30),auditFilter=ref('all');let seq=0
 const status=s=>({ready:'返回数据',empty:'返回为空',error:'请求失败',untested:'未实测',local:'本地降级'})[s]||s
 const money=n=>n==null?'缺失':(n/1e8).toFixed(2)+'亿'
 const candidates=computed(()=>(preparation.value?.rows||[]).filter(r=>`${r.code} ${r.name} ${r.industry}`.includes(search.value.trim())))
 const audited=computed(()=>(audit.value?.items||[]).filter(r=>auditFilter.value==='all'||r.status===auditFilter.value))
-async function load(){const id=++seq;error.value='';try{const results=await Promise.all([axios.get('/api/workbench/preparation',{params:{day:props.day}}),axios.get('/api/workbench/interface-audit'),axios.get('/api/workbench/history-study')]);if(id!==seq)return;[preparation.value,audit.value,study.value]=results.map(r=>r.data)}catch{if(id===seq)error.value='研究数据读取失败，请刷新或确认服务状态。'}}
+async function load(){const id=++seq;loading.value=true;error.value='';try{const results=await Promise.all([axios.get('/api/workbench/preparation',{params:{day:props.day}}),axios.get('/api/workbench/interface-audit'),axios.get('/api/workbench/history-study')]);if(id!==seq)return;[preparation.value,audit.value,study.value]=results.map(r=>r.data)}catch{if(id===seq)error.value='研究数据读取失败，请刷新或确认服务状态。'}finally{if(id===seq)loading.value=false}}
 async function freeze(r){try{const res=await axios.post('/api/workbench/preparation/plans',{day:props.day,code:r.code,mode:props.mode,phase:'review',note:'盘后候选；次日竞价及开盘成交条件待确认'});message.value=res.data.message}catch(e){message.value=e.response?.data?.detail || '冻结失败，请重新核对数据'}}
 watch(()=>props.day,()=>{preparation.value=null;limit.value=30;load()},{immediate:true})
 watch(()=>props.busy,(v,old)=>{if(old&&!v)load()})

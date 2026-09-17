@@ -37,3 +37,9 @@ def test_tick_date_wire_format_is_compact_but_other_dates_stay_iso():
         assert prepare(api,{'trade_date':'2026-09-16','ts_code':'600519'})[1]['trade_date']=='20260916'
         assert prepare(api,{'trade_date':'20260916','ts_code':'600519'})[1]['trade_date']=='20260916'
     assert prepare('stockpool_strong',{'trade_date':'2026-09-16'})[1]['trade_date']=='2026-09-16'
+
+def test_preclose_collection_not_upgraded_to_final_just_because_clock_passes_close():
+    from app.services.research import collected_after_close
+    assert not collected_after_close('2026-09-17',{'p':{'fetched_at':'2026-09-17T11:30:00+08:00'}},['p'])
+    assert collected_after_close('2026-09-17',{'p':{'fetched_at':'2026-09-17T17:11:00+08:00'}},['p'])
+    assert not collected_after_close('2026-09-17',{},['p'])

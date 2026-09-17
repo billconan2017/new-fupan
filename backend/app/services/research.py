@@ -4,7 +4,7 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 from app.services import workbench as wb
-from app.services.data_evidence import SH
+from app.services.data_evidence import SH,quote_time
 from app.liangmai.parsing import records,dragon_records,source_date
 
 REPORT_DIR=Path(__file__).resolve().parents[3]/'data'/'research'
@@ -52,6 +52,10 @@ def preparation_rows(ev):
         r['risks'].append('隔夜消息与次日竞价尚未确认')
     return sorted(out.values(),key=lambda r:(r['overlap'],r['industry_count'],r['amount'] or 0),reverse=True)
 
+def collected_after_close(day,ev,keys):
+    cutoff=datetime.fromisoformat(day+'T17:10:00').replace(tzinfo=SH)
+    return all((stamp:=quote_time(ev.get(key,{}).get('fetched_at'))) is not None and stamp>=cutoff for key in keys)
+
 async def preparation(day):
     ev=await wb.evidence(day)
     cal=(ev.get('basic_trade_calendar',{}).get('payload') or [])+(ev.get('calendar_next_year',{}).get('payload') or [])
@@ -61,7 +65,7 @@ async def preparation(day):
     sources=[{'api':api,'name':name,'status':ev.get(api,{}).get('status','untested'),'rows':ev.get(api,{}).get('row_count',0),'fetched_at':ev.get(api,{}).get('fetched_at')} for api,name in [('stockpool_limit_up','涨停池'),('stockpool_strong','强势池'),('stockpool_broken_board','炸板池'),('lhb_daily','龙虎榜')]]
     return {'window':window,'rows':preparation_rows(ev),'sources':sources,'provisional':provisional,'rule_version':'ashare-preparation-v1',
             'note':'候选按证据交集数、行业聚集数、成交额排序；不是收益预测。历史候选重建不等于当时发出的推荐。龙虎榜仅作资金关注线索，未自动判定买点。',
-            'ready_for_decision':not provisional and all(s['status'] in ('ready','local','empty') for s in sources) and bool(window['buy_date'])}
+            'ready_for_decision':not provisional and collected_after_close(day,ev,('stockpool_limit_up','stockpool_strong','stockpool_broken_board','lhb_daily')) and all(s['status'] in ('ready','local','empty') for s in sources) and bool(window['buy_date'])}
 
 def audit_report():
     p=REPORT_DIR/'interface_audit.json'
