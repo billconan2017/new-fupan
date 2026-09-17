@@ -78,7 +78,9 @@ async def plans(day: date):
 async def history(code:str,day:date):
     if len(code)!=6 or not code.isdigit():raise HTTPException(422,'股票代码无效')
     ev=await service.evidence(day.isoformat());data=ev.get('kline_history:'+code,{})
-    return {'items':data.get('payload') or [],'status':data.get('status','untested'),'fetched_at':data.get('fetched_at'),'adjustment':'前复权'}
+    from app.liangmai.parsing import records,source_date
+    bars=[r for r in records(data.get('payload')) if source_date(r.get('t')) and source_date(r.get('t'))<day.isoformat()] if data.get('status') in ('ready','local') else []
+    return {'items':bars,'status':data.get('status','untested'),'fetched_at':data.get('fetched_at'),'adjustment':'前复权'}
 
 @router.get('/preparation')
 async def preparation(day:date):
@@ -163,3 +165,8 @@ async def automation_tick(request: Request):
         raise HTTPException(403,'仅本机定时器可调用')
     from app.services.autocollect import tick
     return await tick()
+
+@router.get("/paper-observer")
+async def paper_observer():
+    from app.services.paper_observer import report
+    return await report()

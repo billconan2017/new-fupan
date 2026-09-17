@@ -28,9 +28,9 @@ def evaluate(candidate,calendar,minute_bars,daily_bars,limits,asof,policy=None):
     p=policy or POLICY;day=candidate['signal_date'];result={**candidate,'entry_status':'not_entered','paths':[]}
     minutes={str(b.get('t')):b for b in minute_bars}
     signal=minutes.get(day+' 09:35:00');entry=minutes.get(day+' 09:45:00')
-    if not signal or not valid_bar(signal):return result|{'reason':'缺少有效09:35已完成五分钟K线'}
+    if not signal or not valid_bar(signal):return result|{'entry_status':'unknown','reason':'缺少有效09:35已完成五分钟K线'}
     if number(signal['c'])<=number(signal['o']):return result|{'reason':'09:35收盘未站上首根开盘价，不触发入场'}
-    if not entry or not valid_bar(entry):return result|{'reason':'缺少有效09:40开始的下一根五分钟K线'}
+    if not entry or not valid_bar(entry):return result|{'entry_status':'unknown','reason':'缺少有效09:40开始的下一根五分钟K线'}
     daily={source_date(b.get('t')):b for b in daily_bars};stops={source_date(b.get('t')):b for b in limits}
     stop=stops.get(day,{})
     upper=number(stop.get('h'));lower=number(stop.get('l'));price=number(entry['o'])
@@ -64,3 +64,15 @@ def evaluate(candidate,calendar,minute_bars,daily_bars,limits,asof,policy=None):
             path.update(status='evaluated',exit_price=close,gross_pct=round((close/price-1)*100,3),net_pct=round(pnl/cost*100,3),pnl=round(pnl,2),total_costs=round(cost-price*shares+fees,2))
         result['paths'].append(path)
     return result
+
+def filter_comparisons(trades):
+    """Exploratory gates on the original top-three universe, without backfilling replacements."""
+    presets=[('原规则',lambda t:True),('原前三名且评分≥80',lambda t:t.get('score',0)>=80),('原前三名且竞价涨幅≤5%',lambda t:t.get('auction_pct',99)<=5)]
+    out=[]
+    for name,accept in presets:
+        group=[t for t in trades if accept(t)]
+        paths=[p for t in group for p in t['paths'] if p['hold']==1 and p['status']=='evaluated'];n=len(paths)
+        out.append({'name':name,'candidates':len(group),'evaluated':n,'win_rate':round(sum(p['pnl']>0 for p in paths)/n*100,1) if n else None,
+                    'mean_net_pct':round(sum(p['net_pct'] for p in paths)/n,3) if n else None,
+                    'unverified':sum(t['entry_status']=='unknown' for t in group),'not_entered':sum(t['entry_status']=='not_entered' for t in group)})
+    return out

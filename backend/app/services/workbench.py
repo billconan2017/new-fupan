@@ -214,6 +214,11 @@ async def collect(job,day,stage,codes):
     results=[]
     async with COLLECT_LOCK:
         try:
+            if stage=='paper':
+                from app.services.paper_observer import run
+                item=await run(day)
+                await update_job(job,[item],1,True)
+                return
             extra_total=0
             if stage=='execution':
                 calls=[]

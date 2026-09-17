@@ -16,12 +16,12 @@ def slots(now):
     """No replay of missed real-time signals. EOD may catch up to the latest slot."""
     if now.weekday() >= 5: return []
     hm=now.strftime('%H:%M')
-    if '09:26' <= hm < '09:30': return [('09:26','pre')]
+    if '09:26' <= hm < '09:30': return [('09:26','pre'),('09:26','paper')]
     if '09:30' <= hm <= '11:30' or '13:00' <= hm <= '15:00':
         minute=now.minute-now.minute%5
         return [(f'{now.hour:02d}:{minute:02d}','live'),(f'{now.hour:02d}:{minute:02d}','intraday')]
     due=[(t,s) for t,s,_ in SCHEDULE if s=='review' and t<=hm]
-    return [(due[-1][0],stage) for stage in ('review','intraday','history')] if due else []
+    return [(due[-1][0],stage) for stage in ('review','paper','intraday','history')] if due else []
 
 def shortlist(rows):
     codes=[];industries={}

@@ -4,7 +4,7 @@ from pathlib import Path
 from datetime import datetime
 from collections import Counter
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'backend'))
-from app.services.recent_replay import POLICY,choose_candidates,evaluate
+from app.services.recent_replay import POLICY,choose_candidates,evaluate,filter_comparisons
 from app.services.workbench import code_of
 from app.services.data_evidence import SH
 from app.liangmai.client import LiangmaiClient
@@ -54,6 +54,6 @@ async def main():
   # Separate common cohort prevents choosing a horizon simply because more recent dates lack exits.
   common=[t for t in report['trades'] if len(t['paths'])==3 and all(p['status']=='evaluated' for p in t['paths'])]
   report['common_cohort']={'count':len(common),'means':{str(h):round(sum(next(p['net_pct'] for p in t['paths'] if p['hold']==h) for t in common)/len(common),3) if common else None for h in POLICY['holds']}}
-  report.update(complete=True,summary=summaries,entry_counts=dict(Counter(t['entry_status'] for t in report['trades'])));save()
+  report.update(complete=True,comparisons=filter_comparisons(report['trades']),summary=summaries,entry_counts=dict(Counter(t['entry_status'] for t in report['trades'])));save()
  finally:await client.close()
 if __name__=='__main__':asyncio.run(main())

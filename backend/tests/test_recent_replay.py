@@ -33,3 +33,7 @@ def test_missing_limits_not_assumed_fill_and_down_limit_not_realized_loss():
 def test_later_minute_candles_cannot_change_entry():
  args=list(fixture());r=evaluate(*args,args[1][-1]);args[2].append({'t':'2026-09-11 09:50:00','o':10000,'c':10000})
  assert evaluate(*args,args[1][-1])==r
+
+def test_missing_minutes_are_unknown_not_a_rejected_signal():
+ candidate,days,minute,daily,limits=fixture()
+ assert evaluate(candidate,days,[],daily,limits,days[-1])['entry_status']=='unknown'
