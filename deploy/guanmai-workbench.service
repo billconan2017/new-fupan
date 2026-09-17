@@ -1,0 +1,12 @@
+[Unit]
+Description=Guanmai independent web and API
+After=network.target
+
+[Service]
+Type=simple
+ExecStart="/home/bill/文档/ChatGPT/股票复盘系统/new-fupan/.venv/bin/python" "/home/bill/文档/ChatGPT/股票复盘系统/new-fupan/deploy/serve.py"
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

@@ -1,34 +1,29 @@
 <template>
- <div class="wb-desk-toolbar"><span class="wb-source-pill">旧确认池 · {{ day }}</span><span v-if="report" class="wb-desk-health">采集 {{ report.enabled }} <b :class="{'status-error':report.errors}">异常 {{ report.errors }}</b></span><button class="wb-text-button" @click="load">刷新</button><a class="wb-text-button" href="/review/#/live/cockpit">旧版 ↗</a></div>
- <p v-if="error" class="wb-notice error">{{ error }} <button @click="load">重试</button></p>
- <div v-if="loading" class="wb-skeleton">正在核对旧任务与数据仓库…</div>
- <template v-if="report">
- <section class="wb-ops-desk"><div class="wb-panel wb-ops-list"><div class="wb-panel-title"><h3>观察池 <small>最多5只</small></h3><button class="wb-text-button" @click="$emit('open','screen','live')">新版筛选 ↗</button></div><small class="wb-desk-disclaimer">旧策略记录 · 非实时买入指令</small><button v-for="r in report.legacy_candidates" :key="r.code" :class="['wb-ops-stock',{active:selected?.code===r.code}]" @click="select(r)"><span><strong>{{ r.stock_name }}</strong><small>{{ r.code }}</small></span><span>{{ status(r.status) }}</span></button><p v-if="!report.legacy_candidates.length" class="wb-empty">该日旧库暂无记录。可进入新版备选查看。</p><button class="wb-button primary full" @click="$emit('open','research','review')">次日备选 →</button></div>
- <div class="wb-panel wb-ops-chart"><div class="wb-panel-title"><div><h3>{{ selected?.stock_name || '选择观察对象' }}</h3><p>{{ selected?.code }} · 记录 {{ selected?.selected_time?.slice(11,16) || '—' }}</p></div><button v-if="selected" class="wb-button small" :disabled="busy" @click="$emit('collect','intraday',[selected.code])">补采此股分时</button></div><IntradayChart :chart="chart" :loading="chartLoading" compact/><details v-if="selected" class="wb-desk-detail"><summary>入选记录与依据</summary><p>{{ selected.reason_text || '原记录未给出理由' }}</p><small>{{ stage(selected.stage) }} · 原排名去重，分数不与新版混算。</small></details></div></section>
- <details class="wb-panel wb-ops-jobs"><summary>数据库继承范围 <small>部分接入，非全量迁移</small></summary><div class="wb-table-scroll"><table class="wb-table"><thead><tr><th>旧数据</th><th>接入程度</th><th>新版实际用途</th></tr></thead><tbody><tr v-for="r in inheritance" :key="r[0]"><td>{{ r[0] }}</td><td>{{ r[1] }}</td><td>{{ r[2] }}</td></tr></tbody></table></div></details>
- <details class="wb-panel wb-ops-jobs"><summary>数据库日期与条数</summary><div class="wb-panel-title"><div><h3>存储覆盖</h3><p>所选日期 {{ day }} · “最新日期”与“当日条数”分开显示</p></div><button class="wb-button small" @click="load">重新核对</button></div><div class="wb-storage-grid"><article v-for="(r,i) in report.coverage" :key="i"><span>{{ r.store }}</span><h4>{{ r.name }}</h4><strong>{{ r.day_rows ?? '未读到' }}<small v-if="r.day_rows!=null"> 条 / 所选日</small></strong><p>最新日期 {{ r.latest || '未知' }}</p></article></div><p class="wb-footnote">{{ report.note }}</p></details>
- <details class="wb-panel wb-ops-jobs"><summary>采集任务明细 · {{ report.errors }}项上次异常</summary><p class="wb-notice">{{ report.dependency_repair }}</p><div class="wb-table-scroll"><table class="wb-table"><thead><tr><th>任务 / 调度</th><th>上次执行</th><th>状态</th><th>下次计划</th></tr></thead><tbody><tr v-for="(r,i) in report.tasks" :key="i"><td>{{ r.name }}<small>{{ r.schedule }}</small></td><td>{{ time(r.last_run) }}</td><td :class="r.status==='error'?'status-error':''">{{ !r.enabled?'未启用':r.status==='ok'?'执行成功':r.status==='error'?'执行失败':'未确认' }}<small>{{ r.reason }}</small></td><td>{{ time(r.next_run) }}</td></tr></tbody></table></div></details>
+ <div class="wb-desk-toolbar"><span class="wb-source-pill">独立工作台 · {{ day }}</span><span class="wb-desk-health">量脉数据 · {{ data?.scored ?? '—' }}只可评分</span><button class="wb-text-button" @click="load">刷新</button><button class="wb-button small" :disabled="busy" @click="$emit('collect','review',[])">同步复盘</button></div>
+ <p v-if="error" class="wb-notice error">{{ error }}</p>
+ <div class="wb-market-strip" v-if="data"><div v-for="m in metrics" :key="m[0]"><small>{{ m[0] }}</small><strong>{{ m[1] ?? '—' }}</strong></div></div>
+ <div v-if="loading" class="wb-skeleton">读取本地数据仓库…</div>
+ <template v-if="data">
+ <section class="wb-ops-desk"><div class="wb-panel wb-ops-list"><div class="wb-panel-title"><h3>{{ mode==='trend'?'趋势观察':'短线观察' }} <small>最多5只</small></h3><button class="wb-text-button" @click="$emit('open','screen','live')">筛选 ↗</button></div><small class="wb-desk-disclaimer">规则排序 · {{ data.entry_policy?.label || '入场需分时确认' }}</small><button v-for="r in candidates" :key="r.code" :class="['wb-ops-stock',{active:selected?.code===r.code}]" @click="select(r)"><span><strong>{{ r.name }}</strong><small>{{ r.code }} · {{ r.industry }}</small></span><span :class="r.pct_chg>=0?'wb-price-up':'wb-price-down'">{{ r.pct_chg?.toFixed(2) ?? '—' }}%<small>{{ r.score ?? '—' }}分 · {{ r.freshness?.state==='off_session'?'非盘中':r.freshness?.state==='history'?'历史':r.freshness?.label }}</small></span></button><p v-if="!candidates.length" class="wb-empty">当前没有足够证据的标的。等待采集，不填充旧池。</p><button class="wb-button primary full" @click="$emit('open','research','review')">次日备选 →</button></div>
+ <div class="wb-panel wb-ops-chart"><div class="wb-panel-title"><div><h3>{{ selected?.name || '选择观察对象' }} <small>{{ selected?.code }}</small></h3><p>{{ selected?.source_at || '暂无有效行情时点' }}</p></div><button v-if="selected" class="wb-button small" :disabled="busy" @click="$emit('collect','intraday',[selected.code])">更新分时</button></div><IntradayChart :chart="chart" :loading="chartLoading" compact/><details v-if="selected" class="wb-desk-detail"><summary>评分依据与风险</summary><p v-for="f in selected.factors" :key="f.label">{{ f.label }} · {{ f.points ?? '缺失' }}/{{ f.max }} · {{ f.value }}</p><small>{{ selected.risks.join('；') || '规则条件需与分时共同核验' }}</small></details></div></section>
+ <section class="wb-panel"><div class="wb-panel-title"><h3>涨停行业分布</h3><small>按涨停家数 · 非资金热力</small></div><div class="wb-sector-tiles"><button v-for="r in data.industries" :key="r.name" @click="$emit('open','research','review')" :style="{'--heat':Math.min(0.65,0.1+r.count/40)}"><strong>{{ r.name }}</strong><span>{{ r.count }} 家</span></button><p v-if="!data.industries.length" class="wb-empty">板块证据待采集</p></div></section>
+ <details class="wb-panel wb-ops-jobs"><summary>自动采集与数据覆盖 <small>独立 systemd 调度 · PostgreSQL 记录</small></summary><p>{{ automation?.intraday }}</p><div class="wb-schedule-chips"><span v-for="s in automation?.schedule" :key="s.time">{{ s.time }} {{ s.name }}</span></div><p>{{ automation?.note }}</p><div class="wb-table-scroll"><table class="wb-table"><thead><tr><th>接口</th><th>状态</th><th>记录数</th></tr></thead><tbody><tr v-for="r in data.health" :key="r.api"><td>{{ r.name }}</td><td>{{ labels[r.status] || r.status }}</td><td>{{ r.rows }}</td></tr></tbody></table><table class="wb-table"><thead><tr><th>定时执行</th><th>阶段</th><th>结果</th></tr></thead><tbody><tr v-for="r in automation?.runs" :key="r.slot"><td>{{ r.slot }}</td><td>{{ r.stage }}</td><td>{{ labels[r.status] || r.status }} · {{ r.progress }}/{{ r.total }}</td></tr></tbody></table></div></details>
  </template>
 </template>
 <script setup>
-import {ref,watch} from 'vue'
+import {ref,watch,computed,onUnmounted} from 'vue'
 import axios from 'axios'
 import IntradayChart from './IntradayChart.vue'
-const props=defineProps({day:String,busy:Boolean});defineEmits(['open','collect'])
-const report=ref(null),loading=ref(false),error=ref(''),selected=ref(null),chart=ref(null),chartLoading=ref(false);let seq=0,chartSeq=0
-const inheritance=[
- ['旧SQLite选股记录','已接入展示','首页最多5只，保留原时点和阶段'],
- ['旧博主观点表','只核查状态','读取更新日期，正文观点尚未进入新版评分'],
- ['旧PostgreSQL','只读核查','核对日期和条数；已向旧库补回9月17日选股记录'],
- ['旧日线、分钟线','尚未继承','新版图表使用量脉新采集的证据'],
- ['旧实时缓存、资金流、龙虎榜历史','未整体接入','新版对应模块主要重新采集；未全量迁移或合并评分'],
- ['Hermes / OpenClaw旧任务','沿用，读取状态','原任务继续写原库，不自动等于写入新版证据库']
-]
-const status=s=>({confirmed:'旧规则通过',accepted:'旧承接通过',watch:'观察',rejected:'未通过'})[s]||s
-const stage=s=>({confirm1000:'旧确认阶段',accept945:'旧承接阶段',accept931:'旧早确认阶段'})[s]||s
-const time=s=>s?new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(s)):'未记录'
-async function select(r){selected.value=r;chart.value=null;chartLoading.value=true;const id=++chartSeq;try{const res=await axios.get('/api/workbench/intraday/'+r.code,{params:{day:props.day}});if(id===chartSeq)chart.value=res.data}catch{if(id===chartSeq)error.value='分时数据暂不可读'}finally{if(id===chartSeq)chartLoading.value=false}}
-async function load(){const id=++seq;loading.value=true;error.value='';try{const r=await axios.get('/api/workbench/integration-status',{params:{day:props.day},timeout:15000});if(id!==seq)return;report.value=r.data;const item=r.data.legacy_candidates.find(x=>x.code===selected.value?.code)||r.data.legacy_candidates[0];if(item)await select(item)}catch{if(id===seq)error.value='运行状态读取失败，请重试。'}finally{if(id===seq)loading.value=false}}
-watch(()=>props.day,()=>{report.value=null;selected.value=null;chart.value=null;++chartSeq;load()},{immediate:true})
+import {diversify} from './selection'
+const props=defineProps({day:String,busy:Boolean,mode:{type:String,default:'short'}});defineEmits(['open','collect'])
+const data=ref(null),automation=ref(null),loading=ref(false),error=ref(''),selected=ref(null),chart=ref(null),chartLoading=ref(false);let seq=0,chartSeq=0
+const labels={ready:'可用',local:'本地证据',untested:'未采集',empty:'空数据',error:'异常',failed:'失败',partial:'部分缺失',done:'完成',running:'采集中',unavailable:'不可用'}
+const candidates=computed(()=>diversify((data.value?.rows||[]).filter(r=>r.score!=null&&!/ST|退/i.test(r.name)&&!r.in_pool&&r.pct_chg>=0&&r.pct_chg<=7),5,2))
+const metrics=computed(()=>{const m=data.value?.market||{};return [['样本上涨',m.up],['样本下跌',m.down],['涨停',m.limit_up],['跌停',m.limit_down],['炸板',m.broken],['龙虎榜记录',data.value?.health.find(x=>x.api==='lhb_daily')?.status==='ready'?m.dragon_count:null]]})
+async function select(r){selected.value=r;chart.value=null;chartLoading.value=true;const id=++chartSeq;try{const res=await axios.get('/api/workbench/intraday/'+r.code,{params:{day:props.day}});if(id===chartSeq)chart.value=res.data}catch{if(id===chartSeq)error.value='分时暂不可读'}finally{if(id===chartSeq)chartLoading.value=false}}
+async function load(){const id=++seq;loading.value=!data.value;error.value='';try{const [r,a]=await Promise.all([axios.get('/api/workbench/screen',{params:{day:props.day,phase:'live',mode:props.mode},timeout:15000}),axios.get('/api/workbench/automation')]);if(id!==seq)return;data.value=r.data;automation.value=a.data;const item=candidates.value.find(x=>x.code===selected.value?.code)||candidates.value[0];if(item)await select(item);else{selected.value=null;chart.value=null}}catch{if(id===seq)error.value='数据仓库暂不可读，请重试。'}finally{if(id===seq)loading.value=false}}
+watch(()=>[props.day,props.mode],()=>{data.value=null;selected.value=null;chart.value=null;++chartSeq;load()},{immediate:true})
 watch(()=>props.busy,(v,old)=>{if(old&&!v)load()})
+const timer=setInterval(()=>{if(!document.hidden&&!props.busy)load()},60000)
+onUnmounted(()=>{clearInterval(timer);++seq;++chartSeq})
 </script>

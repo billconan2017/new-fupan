@@ -17,7 +17,6 @@ def test_minute_sample_and_actual_quote_time_not_fetch_time():
  report=assess(day,ev,datetime(2026,9,17,10,5,tzinfo=SH));items={i['key']:i for i in report['items']}
  assert items['minute']['status']=='ready'
  assert items['quote']['status']=='partial' and '过期' in items['quote']['detail']
- assert '未启用' in report['automation']
 
 def test_one_fresh_quote_cannot_hide_other_stale_quotes():
  day='2026-09-17';base={'p':10,'o':9,'pc':1,'cje':100,'lb':1}

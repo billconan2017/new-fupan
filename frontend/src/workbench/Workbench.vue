@@ -2,8 +2,8 @@
   <div class="wb-shell">
     <aside class="wb-sidebar">
       <a class="wb-brand" href="/"><span class="wb-brand-mark">脉</span><div>观脉 <small>MARKET OBSERVATORY</small></div></a>
-      <div class="wb-workspace"><span class="wb-dot"></span> 本地研究工作台 <small>V4.3 / 数据与交易研究</small></div>
-      <a class="wb-legacy-link" href="/review/#/live/cockpit">旧版竞价 / 盘中总控 ↗</a><div class="wb-nav-label">交易研究</div>
+      <div class="wb-workspace"><span class="wb-dot"></span> 本地研究工作台 <small>V4.4 / 独立采集与研究</small></div>
+      <div class="wb-nav-label">交易研究</div>
       <button v-for="n in navigation" :key="n.key" :class="['wb-nav',{active:page===n.key}]" @click="page=n.key"><span>{{ n.icon }}</span>{{ n.name }}<small v-if="n.key==='plans'">{{ plans.length }}</small></button>
       <div class="wb-sidebar-bottom"><div class="wb-nav-label">工作原则</div><p>先看环境，再选标的<br>每个分数，都能追溯<br>每次观察，留下依据</p><div class="wb-local">● 本机数据 · 凭证仅在后端</div></div>
     </aside>
@@ -45,7 +45,7 @@
       <section v-if="page==='review'" class="wb-review-grid"><div class="wb-panel"><div class="wb-panel-title"><h3>盘后证据清单</h3><button class="wb-button" :disabled="busy" @click="setPhase('review'); collect('review')">采集盘后数据</button></div><div v-for="h in data?.health.filter(x=>['stockpool_limit_up','stockpool_limit_down','stockpool_broken_board','anomaly_emotion_cycle','lhb_daily'].includes(x.api))" :key="h.api" class="wb-check-row"><span>{{ h.name }}</span><b :class="'status-'+h.status">{{ statusName(h.status) }}</b><small>{{ h.rows }}条</small></div><div class="wb-rules"><strong>复盘要回答什么？</strong><p>① 哪些方向集中涨停？ ② 涨停与炸板是否扩散？ ③ 观察名单的后续价格如何变化？ ④ 当时的数据是否完整？</p></div></div><div class="wb-panel"><h3>当日复盘笔记</h3><p class="wb-muted">笔记仅保存在当前浏览器，按日期区分。</p><textarea v-model="reviewNote" @input="saveReviewNote" placeholder="记录今天的主线、分歧、观察结果，以及下一交易日的验证条件…"></textarea><button class="wb-button" @click="exportReview">导出复盘摘要 ↓</button><p class="wb-footnote">缺项会写入摘要；未把缺失数据推断成弱市或零成交。</p></div></section>
 
       <section v-if="page==='data'" class="wb-panel"><div class="wb-panel-title"><div><h3>量脉接口实测</h3><span>只展示当前日期的真实采集状态；可调用不代表字段完整。</span></div><a href="https://liangmai.pro/docs" target="_blank" rel="noreferrer">官方文档 ↗</a></div><div class="wb-table-scroll"><table class="wb-table"><thead><tr><th>数据能力</th><th>用途</th><th>更新时点</th><th>实测结果</th><th>记录数</th><th>采集时间</th></tr></thead><tbody><tr v-for="h in data?.health || []" :key="h.api"><td><strong>{{ h.name }}</strong><small>{{ h.api }}</small></td><td>{{ h.use }}</td><td>{{ h.timing }}</td><td><span :class="['wb-status','status-'+h.status]">{{ statusName(h.status) }}</span><small>{{ ['error','local'].includes(h.status) ? h.message : '' }}</small></td><td>{{ h.rows }}<small v-if="h.sample_stocks">{{ h.sample_stocks }}只股票</small></td><td>{{ formatTime(h.fetched_at) }}</td></tr></tbody></table></div><div class="wb-rules"><strong>数据使用边界</strong><p>当前榜单不回填到历史日期；日线截至前一交易日；刷新页面只读本地，采集按钮才请求上游。资金流接口尚未纳入评分，避免样本净流入冒充全市场资金。</p><p>本工作台没有券商交易入口，观察计划不会产生真实订单。</p></div></section>
-      <Overview v-if="page==='overview'" :day="day" :busy="busy" @open="openWorkflow" @collect="collect"/>
+      <Overview v-if="page==='overview'" :mode="mode" :day="day" :busy="busy" @open="openWorkflow" @collect="collect"/>
       <Research v-if="page==='research'" :day="day" :mode="mode" :busy="busy" @collect="collect" @stock="openResearchStock"/>
       <footer class="wb-footer"><span>观脉 · 研究与观察系统</span><span>{{ day }} / {{ mode==='short'?'短线':'趋势' }} · 源时间与采集时间分别记录</span></footer>
     </main>

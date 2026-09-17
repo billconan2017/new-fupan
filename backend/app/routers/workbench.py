@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from typing import Literal
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query, HTTPException, Request
 from pydantic import BaseModel, Field, ConfigDict
 from sqlalchemy import text
 import json
@@ -151,3 +151,15 @@ async def recent_replay():
 async def readiness(day:date):
     from app.services.readiness import build
     return await build(day.isoformat())
+
+@router.get('/automation')
+async def automation_status():
+    from app.services.autocollect import status
+    return await status()
+
+@router.post('/automation/tick')
+async def automation_tick(request: Request):
+    if not request.client or request.client.host not in ('127.0.0.1','::1'):
+        raise HTTPException(403,'仅本机定时器可调用')
+    from app.services.autocollect import tick
+    return await tick()

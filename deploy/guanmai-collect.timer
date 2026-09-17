@@ -1,0 +1,11 @@
+[Unit]
+Description=Guanmai collection clock, no AI agent required
+
+[Timer]
+OnCalendar=*-*-* *:*:00
+AccuracySec=1s
+Persistent=true
+Unit=guanmai-collect.service
+
+[Install]
+WantedBy=timers.target

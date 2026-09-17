@@ -47,7 +47,7 @@ def assess(day,ev,now=None):
     gaps=[x['name'] for x in items if x['status']!='ready']
     return {'day':day,'checked_at':now.isoformat(),'items':items,'ready':sum(i['status']=='ready' for i in items),'total':len(items),'gaps':gaps,
             'verdict':'尚不足以支撑完整实盘与可靠回测' if gaps else '所测样本关键字段齐全；仍未证明全市场覆盖或成交可得性',
-            'automation':'页面打开且勾选时才每60秒更新快照；后台持续归档未启用',
+            'automation':'独立定时器负责交易日采集，不依赖页面打开；具体执行结果见自动采集记录',
             'limits':['未接入9:25前逐笔竞价确认','没有券商真实持仓、委托和成交回报','样本外验证与组合资金回测尚未完成']}
 
 async def build(day):

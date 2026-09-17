@@ -1,0 +1,9 @@
+[Unit]
+Description=Guanmai standalone collection tick
+After=guanmai-workbench.service
+Requires=guanmai-workbench.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/curl --fail --silent --show-error --max-time 50 --request POST http://127.0.0.1:8899/api/workbench/automation/tick
+TimeoutStartSec=55

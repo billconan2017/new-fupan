@@ -48,6 +48,9 @@ async def save_evidence(api,day,result):
             row_count=EXCLUDED.row_count,message=EXCLUDED.message,fetched_at=now()'''),
             dict(api=api,day=day,status=status,payload=json.dumps(payload,ensure_ascii=False),count=count,
                  message=result.get('msg','')))
+        await c.execute(text('''INSERT INTO wb_evidence_history(api,trade_date,status,payload,row_count)
+            VALUES(:api,:day,:status,CAST(:payload AS JSONB),:count)'''),
+            dict(api=api,day=day,status=status,payload=json.dumps(payload,ensure_ascii=False),count=count))
     return {'api':api,'status':status,'rows':count,'message':result.get('msg','')}
 
 async def evidence(day):
