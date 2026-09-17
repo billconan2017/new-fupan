@@ -1,0 +1,29 @@
+<template><div><div class="wb-panel-title"><div class="wb-mode"><button v-for="p in presets" :key="p.label" @click="preset(p)">{{p.label}}</button><button v-if="intraday" @click="candles=!candles">{{candles?'切换分时线':'切换5分钟K线'}}</button></div><div class="wb-inline"><button class="wb-button small" aria-label="图表放大" @click="zoom(.6)">＋</button><button class="wb-button small" aria-label="图表缩小" @click="zoom(1.6)">−</button><button class="wb-button small" @click="reset">重置</button></div></div><div v-if="!bars.length" class="wb-empty">暂无有效{{intraday?'分时':'日线'}}数据，请先采集。</div><div ref="el" v-show="bars.length" class="market-chart" :aria-label="intraday?'可缩放分时与5分钟K线':'可缩放日K线与均线'"/><small class="wb-muted">{{rangeLabel}} · 滚轮缩放 · 拖动平移 · 底部滑块选择区间 · 十字线查看价格与量</small></div></template>
+<script setup>
+import {ref,computed,watch,onMounted,onBeforeUnmount,nextTick} from 'vue'
+import * as echarts from 'echarts/core'
+import {CandlestickChart,LineChart,BarChart} from 'echarts/charts'
+import {GridComponent,TooltipComponent,DataZoomComponent,LegendComponent,MarkLineComponent} from 'echarts/components'
+import {CanvasRenderer} from 'echarts/renderers'
+echarts.use([CandlestickChart,LineChart,BarChart,GridComponent,TooltipComponent,DataZoomComponent,LegendComponent,MarkLineComponent,CanvasRenderer])
+const props=defineProps({items:{type:Array,default:()=>[]},intraday:Boolean,previousClose:Number,identity:String,early:Boolean})
+const el=ref(),candles=ref(!props.intraday),rangeLabel=ref(''),bars=computed(()=>[...new Map(props.items.filter(b=>['o','h','l','c'].every(k=>b[k]!=null&&Number.isFinite(+b[k])&&+b[k]>0)&&+b.l<=Math.min(+b.o,+b.c)&&+b.h>=Math.max(+b.o,+b.c)).map(b=>[props.intraday?b.time:b.t,{...b,o:+b.o,c:+b.c,l:+b.l,h:+b.h}])).values()].sort((a,b)=>String(a.time||a.t).localeCompare(String(b.time||b.t))))
+const presets=computed(()=>props.intraday?[{label:'10点前',early:true},{label:'全天',all:true}]:[20,60,100].map(n=>({label:n+'日',n})).concat([{label:'全部',all:true}]))
+let chart,observer,start=0,end=100,lastIdentity=null
+function labels(){if(!props.intraday)return bars.value.map(b=>b.t);let a=[];for(let m=575;m<=900;m+=5){if(m>690&&m<=780)continue;a.push(String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'))}return a}
+function updateLabel(){const a=labels();rangeLabel.value=a.length?`${a[Math.round(start/100*(a.length-1))]} — ${a[Math.round(end/100*(a.length-1))]}`:''}
+function apply(){if(!chart)return;chart.dispatchAction({type:'dataZoom',start,end});updateLabel()}
+function preset(p){const n=labels().length;start=p.n?Math.max(0,100*(n-p.n)/Math.max(n-1,1)):0;end=p.early?100*5/47:100;apply()}
+function reset(){preset(props.intraday?(props.early?{early:true}:{all:true}):{n:60})}
+function zoom(f){const half=Math.min(50,Math.max(2,(end-start)*f/2)),mid=(start+end)/2;start=Math.max(0,mid-half);end=Math.min(100,mid+half);apply()}
+async function draw(){await nextTick();if(!chart)return;const id=props.identity||'';if(bars.value.length && id!==lastIdentity){lastIdentity=id;const n=labels().length;start=props.intraday?0:Math.max(0,100*(n-60)/Math.max(n-1,1));end=props.intraday&&props.early?100*5/47:100}
+ const dates=labels(),map=new Map(bars.value.map(b=>[props.intraday?b.time:b.t,b])),rows=dates.map(t=>map.get(t));const series=[{name:candles.value?'开高低收':'价格',type:candles.value?'candlestick':'line',data:rows.map(b=>b?(candles.value?[b.o,b.c,b.l,b.h]:b.c):null),connectNulls:false,showSymbol:props.intraday,symbolSize:4,itemStyle:{color:'#ed777d',color0:'#50c7a6',borderColor:'#ed777d',borderColor0:'#50c7a6'},lineStyle:{color:'#72ccff',width:2},markLine:props.intraday&&props.previousClose>0?{symbol:'none',data:[{name:'昨收',yAxis:props.previousClose}],lineStyle:{color:'#e8be70'},label:{formatter:'昨收 {c}'}}:undefined}]
+ if(!props.intraday)[5,10,20].forEach((n,i)=>series.push({name:'MA'+n,type:'line',showSymbol:false,connectNulls:false,lineStyle:{width:1.3,color:['#e8be70','#79c9f3','#cf9df7'][i]},data:rows.map((_,j)=>j<n-1?null:+(rows.slice(j-n+1,j+1).reduce((s,b)=>s+b.c,0)/n).toFixed(3))}))
+ series.push({name:'成交量',type:'bar',xAxisIndex:1,yAxisIndex:1,data:rows.map(b=>b&&b.v!=null&&Number.isFinite(+b.v)&&+b.v>=0?{value:+b.v,itemStyle:{color:b.c>=b.o?'#ed777d':'#50c7a6'}}:null)})
+ const axis={type:'category',data:dates,boundaryGap:true,axisLine:{lineStyle:{color:'#455064'}},axisLabel:{color:'#9faec3'},axisPointer:{show:true}}
+ chart.setOption({animation:false,backgroundColor:'transparent',legend:{top:0,textStyle:{color:'#b7c5d9'}},tooltip:{trigger:'axis',renderMode:'richText',axisPointer:{type:'cross'},backgroundColor:'#182236',textStyle:{color:'#e4ecf7'},confine:true},axisPointer:{link:[{xAxisIndex:'all'}]},grid:[{left:62,right:30,top:40,height:'57%'},{left:62,right:30,top:'72%',height:'12%'}],xAxis:[{...axis,axisLabel:{show:false}},{...axis,gridIndex:1}],yAxis:[{scale:true,splitLine:{lineStyle:{color:'#263144'}},axisLabel:{color:'#a9b9ca'}},{scale:true,gridIndex:1,splitNumber:2,splitLine:{show:false},axisLabel:{color:'#8898ad',formatter:v=>v>=10000?(v/10000).toFixed(0)+'万':v}}],dataZoom:[{type:'inside',xAxisIndex:[0,1],start,end,filterMode:'filter'},{type:'slider',xAxisIndex:[0,1],start,end,bottom:0,height:23,filterMode:'filter',textStyle:{color:'#b3bfd0'},borderColor:'#344459',fillerColor:'#72ccff20'}],series},true);updateLabel();chart.resize()}
+watch([bars,candles,()=>props.previousClose,()=>props.identity],draw)
+onMounted(async()=>{chart=echarts.init(el.value);chart.on('datazoom',e=>{const d=e.batch?.[0]||e;start=d.start??start;end=d.end??end;updateLabel()});observer=new ResizeObserver(()=>chart?.resize());observer.observe(el.value);await draw();reset()})
+onBeforeUnmount(()=>{observer?.disconnect();chart?.dispose();chart=null})
+</script>
+<style scoped>.market-chart{width:100%;height:390px;min-width:0}@media(max-width:700px){.market-chart{height:330px}}</style>

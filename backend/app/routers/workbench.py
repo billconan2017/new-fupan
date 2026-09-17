@@ -170,3 +170,14 @@ async def automation_tick(request: Request):
 async def paper_observer():
     from app.services.paper_observer import report
     return await report()
+
+@router.get('/legacy-portfolio')
+def legacy_portfolio():
+    from app.services.legacy_portfolio import report
+    return report()
+
+@router.get('/legacy-replay')
+def legacy_replay():
+    from app.services.research import REPORT_DIR
+    p=REPORT_DIR/'legacy_replay.json'
+    return json.loads(p.read_text()) if p.exists() else {'complete':False,'trades':[],'note':'旧策略历史研究尚未运行'}
