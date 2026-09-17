@@ -114,3 +114,9 @@ async def freeze_preparation(body:Plan):
             {'d':body.day.isoformat(),'code':body.code,'name':row['name'],'mode':body.mode,'note':body.note,
              'evidence':json.dumps(jsonable_encoder(frozen),ensure_ascii=False)})).scalar()
     return {'created':bool(saved),'message':'备选依据和 T+1 日期已冻结（非成交）' if saved else '已存在，保留原始依据'}
+
+@router.get('/recent-replay')
+async def recent_replay():
+    from app.services.research import REPORT_DIR
+    p=REPORT_DIR/'recent_replay.json'
+    return json.loads(p.read_text()) if p.exists() else {'complete':False,'trades':[],'note':'尚未运行近五日回溯'}

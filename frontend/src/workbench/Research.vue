@@ -1,6 +1,6 @@
 <template>
  <section class="wb-hero"><div><div class="wb-eyebrow">A-SHARE / T+1 RESEARCH</div><h2>今晚缩小范围，明早确认强弱。</h2><p>盘后热点与龙虎榜 → 次日竞价核对 → 9:30—10:00观察入场 → 遵守 T+1 退出。候选依据、历史缺口和成交假设分别保留。</p></div></section>
- <div class="wb-panel-title"><div class="wb-mode"><button :class="{active:tab==='prepare'}" @click="tab='prepare'">次日备选</button><button :class="{active:tab==='study'}" @click="tab='study'">持有期研究</button><button :class="{active:tab==='audit'}" @click="tab='audit'">完整接口审计</button></div><button class="wb-button" @click="load">刷新研究结果</button></div>
+ <div class="wb-panel-title"><div class="wb-mode"><button :class="{active:tab==='prepare'}" @click="tab='prepare'">次日备选</button><button :class="{active:tab==='recent'}" @click="tab='recent'">近五日回溯</button><button :class="{active:tab==='study'}" @click="tab='study'">持有期研究</button><button :class="{active:tab==='audit'}" @click="tab='audit'">完整接口审计</button></div><button class="wb-button" @click="load">刷新研究结果</button></div>
  <p v-if="error" class="wb-notice error" role="alert">{{ error }}</p><p v-if="message" class="wb-notice" role="status">{{ message }}</p>
  <template v-if="tab==='prepare'">
  <section class="wb-metrics"><article><label>盘后信号日</label><strong>{{ day }}</strong><small>{{ preparation?.provisional?'盘后尚未完成，临时结果':'证据按所选日期隔离' }}</small></article><article><label>计划买入日</label><strong>{{ preparation?.window.buy_date || '日历缺失' }}</strong><small>次一交易日开盘后确认</small></article><article><label>最早卖出日</label><strong>{{ preparation?.window.earliest_sell_date || '日历缺失' }}</strong><small>不能买入当天卖出；周末、休市跳过</small></article><article><label>合并去重候选</label><strong>{{ preparation?.rows.length ?? '—' }}</strong><small>涨停池 ∪ 强势池 ∪ 龙虎榜</small></article></section>
@@ -12,6 +12,7 @@
  <p v-if="!candidates.length" class="wb-empty">所选日期尚无候选证据，请采集盘后数据。不会借用其他日期替代。</p><button v-if="candidates.length>limit" class="wb-button" @click="limit+=30">显示更多（{{ Math.min(limit,candidates.length) }} / {{ candidates.length }}）</button>
  <p class="wb-footnote">历史日期点击冻结，只记录“现在重建的历史候选”，不能冒充当时推荐。当前版本没有真实委托或成交记录。</p></section>
  </template>
+ <RecentReplay v-if="tab==='recent'"/>
  <template v-if="tab==='study'"><section class="wb-panel"><h3>持有 1 / 2 / 3 / 5 / 10 个交易日</h3><p class="wb-notice">当前日线研究不能验证“10点前买入更好”，也不能验证竞价策略。需要历史分钟线、带时间戳的信号与可成交证据。</p><p>{{ study?.note }}</p><p v-if="study?.complete" class="wb-notice">源响应内带日期的历史池样本：{{ study.historical_date_verified_samples }} / {{ study.trades?.length }}。未带日期的样本仅依赖请求参数，以下为有条件的探索性结果。</p><p class="wb-rules">持有1日 = 买入后的下一交易日退出。盘后信号 D → D+1 开盘买入 → 最早 D+2 卖出。不同持有期需要同一批成熟样本比较；不能把重叠交易的平均涨幅当作账户收益。</p>
 
  <div v-if="study?.comparisons?.length" class="wb-table-scroll"><table class="wb-table"><thead><tr><th>持有期</th><th>可评估 / 候选</th><th>平均价格变化</th><th>价格上涨比例</th></tr></thead><tbody><tr v-for="r in study.comparisons" :key="r.hold"><td>{{ r.hold }}交易日</td><td>{{ r.count }} / {{ r.total }}</td><td>{{ r.mean_pct==null?'证据不足':r.mean_pct+'%' }}</td><td>{{ r.win_rate==null?'—':r.win_rate+'%' }}</td></tr></tbody></table></div>
@@ -24,6 +25,7 @@
 <script setup>
 import {ref,computed,watch} from 'vue'
 import axios from 'axios'
+import RecentReplay from './RecentReplay.vue'
 const props=defineProps({day:String,mode:String,busy:Boolean});defineEmits(['collect'])
 const tab=ref('prepare'),preparation=ref(null),audit=ref(null),study=ref(null),error=ref(''),message=ref(''),search=ref(''),limit=ref(30),auditFilter=ref('all');let seq=0
 const status=s=>({ready:'返回数据',empty:'返回为空',error:'请求失败',untested:'未实测',local:'本地降级'})[s]||s
