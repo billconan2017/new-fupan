@@ -1,0 +1,21 @@
+--- a/dc_money_flow_fallback_job.py
++++ b/dc_money_flow_fallback_job.py
+@@ -32,6 +32,8 @@
+         del os.environ[_k]
+ 
+ TARGET = '/home/bill/.hermes/workspace/LocalStockAllInOne/api/import_smb_money_flow_dc.py'
++PROJECT_ROOT = os.path.dirname(os.path.dirname(TARGET))
++sys.path.insert(0, PROJECT_ROOT)
+ LOG_DIR = '/home/bill/.hermes/logs'
+ os.makedirs(LOG_DIR, exist_ok=True)
+ 
+@@ -62,7 +64,8 @@
+     try:
+         r = subprocess.run(
+             [sys.executable, TARGET],
+-            cwd=os.path.dirname(TARGET),
++            cwd=PROJECT_ROOT,
++            env=dict(os.environ, PYTHONPATH=PROJECT_ROOT + os.pathsep + os.environ.get('PYTHONPATH', '')),
+             capture_output=True,
+             text=True,
+             timeout=1200,

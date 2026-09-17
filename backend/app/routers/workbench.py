@@ -112,6 +112,11 @@ def legacy_research(day:date):
     from app.services.legacy_research import report
     return report(day.isoformat())
 
+@router.get('/integration-status')
+def integration_status(day:date):
+    from app.services.integration_status import report
+    return report(day.isoformat())
+
 @router.get('/history-study')
 async def history_study():
     from app.services.research import history_report

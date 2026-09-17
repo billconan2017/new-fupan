@@ -10,6 +10,15 @@ from flask import request, send_from_directory, Response
 
 def register_workbench(app, dist, upstream='http://127.0.0.1:19009'):
     root=Path(dist).resolve()
+    @app.after_request
+    def legacy_navigation(response):
+        if request.path in ('/review','/review/') and response.status_code==200 and response.mimetype=='text/html':
+            response.direct_passthrough=False
+            html=response.get_data(as_text=True)
+            banner='''<aside id="guanmai-version-link" style="position:fixed;bottom:12px;right:16px;z-index:2147483000;max-width:calc(100vw - 32px);padding:12px 16px;border:1px solid #bfa46c;border-radius:10px;background:#142035;color:#e2e9f2;font:13px/1.6 sans-serif;box-shadow:0 6px 25px #0006">当前为旧版总控 · 原有功能保留 <a href="/" style="color:#f3d297;margin-left:12px;font-weight:600">打开新版总览与数据状态 ↗</a></aside>'''
+            response.set_data(html.replace('</body>',banner+'</body>'))
+            response.headers['Cache-Control']='no-store'
+        return response
     @app.before_request
     def workbench_entry():
         path=request.path

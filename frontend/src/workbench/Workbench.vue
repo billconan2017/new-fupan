@@ -2,8 +2,8 @@
   <div class="wb-shell">
     <aside class="wb-sidebar">
       <a class="wb-brand" href="/"><span class="wb-brand-mark">脉</span><div>观脉 <small>MARKET OBSERVATORY</small></div></a>
-      <div class="wb-workspace"><span class="wb-dot"></span> 本地研究工作台 <small>V4.2 / 短线工作流</small></div>
-      <div class="wb-nav-label">交易研究</div>
+      <div class="wb-workspace"><span class="wb-dot"></span> 本地研究工作台 <small>V4.3 / 数据与交易研究</small></div>
+      <a class="wb-legacy-link" href="/review/#/live/cockpit">旧版竞价 / 盘中总控 ↗</a><div class="wb-nav-label">交易研究</div>
       <button v-for="n in navigation" :key="n.key" :class="['wb-nav',{active:page===n.key}]" @click="page=n.key"><span>{{ n.icon }}</span>{{ n.name }}<small v-if="n.key==='plans'">{{ plans.length }}</small></button>
       <div class="wb-sidebar-bottom"><div class="wb-nav-label">工作原则</div><p>先看环境，再选标的<br>每个分数，都能追溯<br>每次观察，留下依据</p><div class="wb-local">● 本机数据 · 凭证仅在后端</div></div>
     </aside>
@@ -63,7 +63,7 @@ import Overview from './Overview.vue'
 import './workbench.css'
 const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())
 const day=ref(today),mode=ref('short'),phase=ref('live'),page=ref('overview'),data=ref(null),plans=ref([]),loading=ref(false),busy=ref(false),error=ref(''),message=ref(''),job=ref(null)
-const navigation=[{key:'overview',icon:'◉',name:'今日工作流'},{key:'screen',icon:'◈',name:'标的工作台'},{key:'research',icon:'◷',name:'次日备选与研究'},{key:'plans',icon:'☆',name:'我的观察计划'},{key:'review',icon:'▥',name:'盘后复盘'},{key:'data',icon:'⌘',name:'数据与证据'}]
+const navigation=[{key:'overview',icon:'◉',name:'今日总览'},{key:'screen',icon:'◈',name:'标的工作台'},{key:'research',icon:'◷',name:'次日备选与研究'},{key:'plans',icon:'☆',name:'我的观察计划'},{key:'review',icon:'▥',name:'盘后复盘'},{key:'data',icon:'⌘',name:'数据与证据'}]
 const phases=[{key:'pre',title:'竞价确认',subtitle:'前日热点 · 约9:26后'},{key:'live',title:'盘中筛选',subtitle:'行情 · 跟踪'},{key:'review',title:'盘后验证',subtitle:'结果 · 复盘'}]
 const phaseName=p=>phases.find(x=>x.key===p)?.title || p
 const phaseLabel=computed(()=>phaseName(phase.value))
