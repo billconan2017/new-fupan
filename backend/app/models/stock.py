@@ -18,6 +18,7 @@ class MarketSnapshot(Base):
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     trade_date = Column(String(10), nullable=False, index=True)
     snapshot_at = Column(DateTime, nullable=False, index=True)
+    source_at = Column(DateTime)  # upstream timestamp; null for unverifiable legacy rows
     code = Column(String(10), nullable=False)
     name = Column(String(50))
     price = Column(Float)

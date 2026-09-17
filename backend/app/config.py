@@ -31,6 +31,9 @@ class Settings(BaseSettings):
         return URL.create(driver, username=self.pg_user, password=self.pg_password,
                           host=self.pg_host, port=self.pg_port, database=self.pg_database)
 
+    # Optional legacy SQLite warehouse; used only for explicit read-only history.
+    legacy_market_db: str = ""
+
     # Redis
     redis_host: str = "localhost"
     redis_port: int = 6379

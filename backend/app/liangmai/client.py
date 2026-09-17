@@ -194,6 +194,9 @@ class LiangmaiClient:
             except httpx.RequestError:
                 # Never return exception strings: query URLs contain credentials.
                 code = 'network_error'
+            if api in {'market_snapshot_all', 'market_quote_all'}:
+                return self._error(api, code, '上游快照请求失败；保留原错误，等待冷却后再采集',
+                                   retryAfterSeconds=self.settings.liangmai_snapshot_cooldown, remoteCalls=calls)
             if attempt+1 < self.settings.liangmai_max_attempts:
                 await asyncio.sleep(0.4 * (2**attempt))
         return self._error(api, code, '量脉请求重试后仍失败', remoteCalls=calls)

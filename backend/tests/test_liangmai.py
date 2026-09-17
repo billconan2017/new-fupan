@@ -176,3 +176,15 @@ def test_snapshot_code_index_and_source_date():
     assert snapshot_records({'600519':{'p':12}})==[{'p':12,'code':'600519'}]
     assert snapshot_records([{'p':12}])==[]
     assert source_date('20260916')=='2026-09-16'
+
+
+async def test_snapshot_server_error_not_disguised_as_throttle():
+    calls=[]
+    def upstream(req):
+        calls.append(req)
+        return httpx.Response(503,json={})
+    c=make_client(upstream)
+    r=await c.call('market_snapshot_all')
+    assert str(r['code'])=='503' and len(calls)==1
+    assert r['_meta']['retryAfterSeconds'] > 0
+    await c.close()

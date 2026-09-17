@@ -79,7 +79,8 @@ app.add_middleware(
 )
 
 app.include_router(health.router)
-from app.routers import data_quality
+from app.routers import data_quality, cockpit
+app.include_router(cockpit.router)
 app.include_router(data_quality.router)
 app.include_router(snapshot.router)
 app.include_router(fupan.router)

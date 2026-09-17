@@ -8,6 +8,7 @@ from app.database import engine
 from app.liangmai.parsing import snapshot_records, source_date
 from app.utils import is_trading_day
 from zoneinfo import ZoneInfo
+from app.services.data_evidence import quote_time
 
 log = logging.getLogger("snapshot.scheduler")
 
@@ -85,24 +86,25 @@ class SnapshotScheduler:
         if not result.get("ok"):
             log.warning(f"快照拉取失败: {result.get('msg')}")
             self._error_count += 1
-            return
+            return {"ok": False, "msg": result.get("msg"), "code": result.get("code")}
 
         data = result.get("data")
         if not data:
             log.warning("快照数据为空")
-            return
+            return {"ok": False, "msg": "上游快照为空，保留已有行情"}
 
         # data 可能是 list 或 dict
         stocks = [s for s in snapshot_records(data) if source_date(s.get("t")) == trade_date]
         if not stocks:
             log.warning("快照股票列表为空")
-            return
+            return {"ok": False, "msg": "未找到日期属于今天的有效行情，保留已有数据"}
 
         # 写入数据库
         await self._batch_insert(trade_date, snapshot_at, stocks)
         self._last_snapshot_at = snapshot_at
         self._snapshot_count += 1
         log.info(f"快照写入完成: {len(stocks)} 只, 第 {self._snapshot_count} 次")
+        return {"ok": True, "count": len(stocks), "msg": "快照已入库"}
 
     async def _batch_insert(self, trade_date: str, snapshot_at: str, stocks: list):
         """批量写入快照数据"""
@@ -119,6 +121,7 @@ class SnapshotScheduler:
                 "trade_date": trade_date,
                 "snapshot_at": datetime.fromisoformat(snapshot_at) if isinstance(snapshot_at, str) else snapshot_at,
                 "code": code,
+                "source_at": quote_time(s.get("t")).replace(tzinfo=None) if quote_time(s.get("t")) else None,
                 "name": s.get("mc", s.get("n", s.get("name"))),
                 "price": _float(s.get("p", s.get("price"))),
                 "pct_chg": _float(s.get("pc", s.get("pct_chg"))),
@@ -143,11 +146,11 @@ class SnapshotScheduler:
             await conn.execute(
                 text("""
                     INSERT INTO market_snapshot
-                        (trade_date, snapshot_at, code, name, price, pct_chg, amount, volume,
+                        (trade_date, snapshot_at, source_at, code, name, price, pct_chg, amount, volume,
                          open, high, low, pre_close, turnover, volume_ratio, amplitude,
                          circulating_cap, total_cap)
                     VALUES
-                        (:trade_date, :snapshot_at, :code, :name, :price, :pct_chg, :amount, :volume,
+                        (:trade_date, :snapshot_at, :source_at, :code, :name, :price, :pct_chg, :amount, :volume,
                          :open, :high, :low, :pre_close, :turnover, :volume_ratio, :amplitude,
                          :circulating_cap, :total_cap)
                 """),
@@ -158,7 +161,8 @@ class SnapshotScheduler:
         """清理过期快照数据"""
         async with engine.begin() as conn:
             result = await conn.execute(
-                text(f"DELETE FROM market_snapshot WHERE trade_date < CURRENT_DATE - INTERVAL '{RETENTION_DAYS} days'")
+                text(f"""DELETE FROM market_snapshot s WHERE trade_date < CURRENT_DATE - INTERVAL '{RETENTION_DAYS} days'
+                    AND snapshot_at < (SELECT MAX(m.snapshot_at) FROM market_snapshot m WHERE m.trade_date=s.trade_date)""")
             )
             deleted = result.rowcount
             if deleted > 0:

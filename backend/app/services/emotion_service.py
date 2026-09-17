@@ -30,7 +30,7 @@ async def fetch_emotion_cycle(trade_date: str = None) -> dict:
     # 解析情绪数据 (量脉 colNameList 映射)
     # 列: date1=日期 szbl=上涨比例 lbjs=连板数 ylgd=最高board zxgd=最低board
     #     dmqx=当日情绪分 drqx=? ztjs=涨停家数 dbcgl=封板率 dtjs=跌停家数 zbjs=炸板家数
-    emotion_index = _float(item.get("dmqx", item.get("emotionIndex", item.get("emotion_index", item.get("score", 0)))))
+    emotion_index = _float(item.get("dmqx", item.get("emotionIndex", item.get("emotion_index", item.get("score")))))
     raw_phase = item.get("drqx", item.get("emotionLevel", item.get("emotion_level", item.get("level", ""))))
     # 如果是数值，转换为阶段文字
     if isinstance(raw_phase, (int, float)):
@@ -47,16 +47,16 @@ async def fetch_emotion_cycle(trade_date: str = None) -> dict:
             emotion_level = "退潮"
     else:
         emotion_level = str(raw_phase) if raw_phase else ""
-    rise_ratio = _float(item.get("szbl", 0))
+    rise_ratio = _float(item.get("szbl"))
 
-    limit_up_count = _int(item.get("ztjs", item.get("limitUpCount", item.get("limit_up_count", 0))))
-    limit_down_count = _int(item.get("dtjs", item.get("limitDownCount", item.get("limit_down_count", 0))))
-    rise_count = _int(item.get("riseCount", item.get("rise_count", item.get("upNum", 0))))
-    fall_count = _int(item.get("fallCount", item.get("fall_count", item.get("downNum", 0))))
-    height_board = _int(item.get("ylgd", item.get("heightBoard", item.get("height_board", item.get("maxBoard", 0)))))
-    continue_count = _int(item.get("lbjs", item.get("continueCount", item.get("continue_count", item.get("lianban", 0)))))
-    broken_count = _int(item.get("zbjs", item.get("brokenCount", item.get("broken_count", item.get("zhapan", 0)))))
-    seal_rate = _float(item.get("dbcgl", item.get("sealRate", item.get("seal_rate", 0))))
+    limit_up_count = _int(item.get("ztjs", item.get("limitUpCount", item.get("limit_up_count"))))
+    limit_down_count = _int(item.get("dtjs", item.get("limitDownCount", item.get("limit_down_count"))))
+    rise_count = _int(item.get("riseCount", item.get("rise_count", item.get("upNum"))))
+    fall_count = _int(item.get("fallCount", item.get("fall_count", item.get("downNum"))))
+    height_board = _int(item.get("ylgd", item.get("heightBoard", item.get("height_board", item.get("maxBoard")))))
+    continue_count = _int(item.get("lbjs", item.get("continueCount", item.get("continue_count", item.get("lianban")))))
+    broken_count = _int(item.get("zbjs", item.get("brokenCount", item.get("broken_count", item.get("zhapan")))))
+    seal_rate = _float(item.get("dbcgl", item.get("sealRate", item.get("seal_rate"))))
 
     rows = {
         "trade_date": trade_date,
@@ -70,8 +70,8 @@ async def fetch_emotion_cycle(trade_date: str = None) -> dict:
         "continue_count": continue_count,
         "broken_count": broken_count,
         "seal_rate": seal_rate,
-        "avg_change_pct": _float(item.get("avgChangePct", item.get("avg_change_pct", 0))),
-        "turnover_avg": _float(item.get("turnoverAvg", item.get("turnover_avg", 0))),
+        "avg_change_pct": _float(item.get("avgChangePct", item.get("avg_change_pct"))),
+        "turnover_avg": _float(item.get("turnoverAvg", item.get("turnover_avg"))),
     }
 
     async with engine.begin() as conn:
@@ -103,7 +103,7 @@ async def query_emotion(trade_date: str = None, days: int = 30) -> dict:
 
         # 近 N 天趋势
         trend_result = await conn.execute(text("""
-            SELECT * FROM emotion_cycle ORDER BY trade_date DESC LIMIT :l
+            SELECT * FROM emotion_cycle WHERE trade_date <= :d ORDER BY trade_date DESC LIMIT :l
         """), {"l": days, "d": trade_date})
         trend = [dict(row._mapping) for row in trend_result]
 

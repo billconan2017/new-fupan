@@ -25,6 +25,7 @@
       <!-- 左侧固定菜单栏 (220px)：全部7个页面常驻 -->
       <aside class="app-sidebar">
         <div class="sidebar-label">数据总览</div>
+        <router-link to="/cockpit" class="nav-item"><span class="nav-icon">◎</span><span>复盘与盘中总控</span></router-link>
         <router-link to="/" custom v-slot="{ isActive, navigate }">
           <div class="nav-item" :class="{ active: isActive }" @click="navigate">
             <span class="nav-icon">📊</span><span>大盘总览</span>
@@ -125,6 +126,7 @@ const mainlineFilter = ref('')
 const cachedViews = ['Dashboard', 'Pools', 'Auction', 'Sector', 'Dragon', 'Capital', 'Review', 'Strategy', 'LiveTrading']
 
 const pageTitles = {
+  '/cockpit': ['复盘与盘中总控', '昨日证据 · 今日观察 · 数据时效'],
   '/admin/data-sources': ['数据源状态', '接口调用 · 数据日期 · 采集任务'],
   '/': ['大盘总览', '市场情绪 · 涨跌统计 · 复盘评分'],
   '/auction': ['竞价数据', '板块竞价 · 个股竞价 · 封单排行'],

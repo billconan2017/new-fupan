@@ -61,3 +61,27 @@ async def test_pipeline_inserts_and_health(monkeypatch):
             assert all(r['status']=='available' for r in health.json()['datasets'])
     finally:
         await engine.dispose()
+
+
+async def test_cockpit_date_boundaries_and_missing_quotes():
+    from app.routers.cockpit import summary
+    from app.services.snapshot_scheduler import SnapshotScheduler
+    from app.services.review_service import generate_review_snapshot
+    from datetime import date
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(text("INSERT INTO limit_up_pool (trade_date,code,name,consecutive) VALUES ('2020-01-03','000001','历史样本',2),('2020-01-06','000001','历史样本',3),('2020-01-03','000002','缺报价',1)"))
+        await SnapshotScheduler()._batch_insert('2020-01-06','2020-01-06 10:01:00',[
+            {'code':'000001','p':12,'pc':2,'cje':123456789,'t':'2020-01-06 10:00:00'}])
+        r=await summary(date(2020,1,6))
+        assert r['baseline_date']=='2020-01-03'  # no calendar-day subtraction
+        assert r['watchlist']['total']==2 and r['watchlist']['quoted']==1
+        assert r['watchlist']['in_today_pool']==1
+        assert r['watchlist']['items'][0]['quote_status']['state']=='history'
+        assert r['watchlist']['items'][1]['price'] is None
+        assert r['remote_calls']==0 and r['review']['overall_score'] is None
+        old=await summary(date(2020,1,2))
+        assert old['baseline_date'] is None and old['watchlist']['total']==0
+        assert (await generate_review_snapshot('2020-01-02'))['report']['quality']['status']=='partial'
+    finally:
+        await engine.dispose()

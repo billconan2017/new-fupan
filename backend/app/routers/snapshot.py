@@ -63,12 +63,13 @@ async def snapshot_latest(
     }
 
 
+@router.post("/api/snapshot/fetch")
 @router.post("/snapshot/fetch")
 async def snapshot_fetch():
     """手动触发快照拉取（测试用）"""
     from app.services.snapshot_scheduler import snapshot_scheduler
-    await snapshot_scheduler._fetch_and_store()
-    return {"status": "triggered", **snapshot_scheduler.get_status()}
+    result = await snapshot_scheduler._fetch_and_store()
+    return {**result, **snapshot_scheduler.get_status()}
 
 
 @router.get("/snapshot/stats")

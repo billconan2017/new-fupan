@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
+  { path: "/cockpit", name: "Cockpit", component: () => import("../views/Cockpit.vue"), meta: { title: "复盘与盘中总控" } },
   { path: '/', name: 'Dashboard', component: () => import('../views/Dashboard.vue'), meta: { title: '大盘总览', icon: '📊' } },
   { path: '/auction', name: 'Auction', component: () => import('../views/Auction.vue'), meta: { title: '竞价数据', icon: '🔔' } },
   { path: '/pools', name: 'Pools', component: () => import('../views/Pools.vue'), meta: { title: '涨跌停池', icon: '📈' } },

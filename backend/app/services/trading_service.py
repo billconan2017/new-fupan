@@ -76,7 +76,7 @@ async def delete_account(account_id: int) -> dict:
 async def list_accounts() -> dict:
     """列出所有账户"""
     async with engine.begin() as conn:
-        result = await conn.execute(text("SELECT * FROM account_info ORDER BY id"))
+        result = await conn.execute(text("SELECT id, account_name, broker, account_type, initial_capital, status, remark FROM account_info ORDER BY id"))
         items = [dict(row._mapping) for row in result]
     return {"ok": True, "items": items}
 
@@ -218,7 +218,7 @@ async def place_order(data: dict) -> dict:
             "remark": data.get("remark", ""),
         })
 
-    return {"ok": True, "msg": "委托已提交", "date": trade_date}
+    return {"ok": True, "msg": "已保存本地委托记录，未发送券商", "execution_mode": "local_record", "date": trade_date}
 
 
 async def cancel_order(order_id: int) -> dict:

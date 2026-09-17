@@ -18,7 +18,7 @@
               color: scoreColor(report.overall_score)
             }">
               <div style="width:72px;height:72px;border-radius:50%;background:var(--bg-card);display:flex;align-items:center;justify-content:center;flex-direction:column">
-                <span style="font-size:24px;font-weight:800;line-height:1">{{ report.overall_score }}</span>
+                <span style="font-size:24px;font-weight:800;line-height:1">{{ report.overall_score ?? '—' }}</span>
                 <span style="font-size:9px;color:var(--text-muted)">综合评分</span>
               </div>
             </div>
@@ -46,7 +46,7 @@
         </div>
         <div class="kpi-row-5" style="grid-template-columns:repeat(4,1fr)">
           <div class="stat-card"><div class="stat-label">情绪分</div><div class="stat-value" :class="emotion.emotion_score >= 50 ? 'up' : 'down'" style="font-size:18px">{{ emotion.emotion_score }}</div></div>
-          <div class="stat-card"><div class="stat-label">封板率</div><div class="stat-value neutral" style="font-size:18px">{{ emotion.seal_rate }}%</div></div>
+          <div class="stat-card"><div class="stat-label">封板率</div><div class="stat-value neutral" style="font-size:18px">{{ emotion.seal_rate == null ? '—' : emotion.seal_rate + '%' }}</div></div>
           <div class="stat-card"><div class="stat-label">最高板</div><div class="stat-value neutral" style="font-size:18px">{{ emotion.height_board }}</div></div>
           <div class="stat-card"><div class="stat-label">连板数</div><div class="stat-value neutral" style="font-size:18px">{{ emotion.continue_count }}</div></div>
         </div>
@@ -93,7 +93,7 @@ const report = ref(null)
 const emotion = ref(null)
 const lu = ref(null)
 
-const scoreColor = (s) => s >= 65 ? 'var(--color-down)' : s >= 40 ? 'var(--color-orange)' : 'var(--color-up)'
+const scoreColor = (s) => s == null ? 'var(--text-muted)' : s >= 65 ? 'var(--color-down)' : s >= 40 ? 'var(--color-orange)' : 'var(--color-up)'
 
 const coreStats = computed(() => {
   if (!report.value) return []

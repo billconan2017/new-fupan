@@ -31,7 +31,7 @@
             color: scoreColor(report.overall_score)
           }">
             <div style="width:74px;height:74px;border-radius:50%;background:var(--bg-card);display:flex;align-items:center;justify-content:center;flex-direction:column">
-              <span style="font-size:26px;font-weight:800;line-height:1">{{ report.overall_score }}</span>
+              <span style="font-size:26px;font-weight:800;line-height:1">{{ report.overall_score ?? '—' }}</span>
               <span style="font-size:9px;color:var(--text-muted)">综合评分</span>
             </div>
           </div>
@@ -46,7 +46,7 @@
             <div class="card-header"><div class="card-title">🧠 情绪周期</div><span class="tag tag-blue">{{ report.emotion_summary.cycle_phase }}</span></div>
             <div class="kpi-row" style="grid-template-columns:1fr 1fr">
               <div class="stat-card"><div class="stat-label">情绪分</div><div class="stat-value" :class="report.emotion_summary.emotion_score >= 50 ? 'up' : 'down'" style="font-size:18px">{{ report.emotion_summary.emotion_score }}</div></div>
-              <div class="stat-card"><div class="stat-label">封板率</div><div class="stat-value neutral" style="font-size:18px">{{ report.emotion_summary.seal_rate }}%</div></div>
+              <div class="stat-card"><div class="stat-label">封板率</div><div class="stat-value neutral" style="font-size:18px">{{ report.emotion_summary.seal_rate == null ? '—' : report.emotion_summary.seal_rate + '%' }}</div></div>
             </div>
           </div>
 
@@ -124,7 +124,7 @@ const tab = ref('detail')
 const report = ref(null)
 const listItems = ref([])
 
-const scoreColor = (s) => s >= 65 ? 'var(--color-down)' : s >= 40 ? 'var(--color-orange)' : 'var(--color-up)'
+const scoreColor = (s) => s == null ? 'var(--text-muted)' : s >= 65 ? 'var(--color-down)' : s >= 40 ? 'var(--color-orange)' : 'var(--color-up)'
 const fmtAmt = (v) => { if (!v) return '-'; if (Math.abs(v) >= 1e8) return (v/1e8).toFixed(2) + '亿'; if (Math.abs(v) >= 1e4) return (v/1e4).toFixed(0) + '万'; return v?.toString() }
 
 async function loadReport() {

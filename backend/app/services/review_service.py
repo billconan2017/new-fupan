@@ -23,84 +23,32 @@ log = logging.getLogger("review.service")
 # ═══════════════════════ 生成报告 ═══════════════════════
 
 async def generate_review(trade_date: str = None) -> dict:
-    """生成盘后复盘报告（聚合全部模块 → 写入 review_reports）"""
-    trade_date = trade_date or date.today().isoformat()
-
-    # 1. 并行收集各模块数据
-    emotion = await _query_emotion(trade_date)
-    limit_up = await _query_limit_up(trade_date)
-    limit_down = await _query_limit_down(trade_date)
-    broken_board = await _query_broken_board(trade_date)
-    dragon = await _query_dragon_tiger(trade_date)
-    capital = await _query_capital_flow(trade_date)
-    strong = await _query_strong_stocks(trade_date)
-    risks = await _query_risk_alarms(trade_date)
-    overview = await _query_market_overview(trade_date)
-
-    # 2. 综合评分
-    overall_score, overall_comment = _calculate_score(
-        emotion, limit_up, limit_down, broken_board, dragon, capital, overview
-    )
-
-    # 3. 组装报告
-    report = {
-        "trade_date": trade_date,
-        "market_overview": overview,
-        "emotion_summary": emotion,
-        "limit_up_analysis": limit_up,
-        "limit_down_analysis": limit_down,
-        "broken_board_analysis": broken_board,
-        "dragon_tiger_summary": dragon,
-        "capital_summary": capital,
-        "strong_stocks": strong,
-        "risk_alarms": risks,
-        "overall_score": overall_score,
-        "overall_comment": overall_comment,
-    }
-
-    # 4. 写入数据库
-    await _save_report(trade_date, report)
-
-    log.info(f"复盘报告生成: date={trade_date} score={overall_score}")
-    return {"ok": True, "date": trade_date, "report": report}
+    result = await generate_review_snapshot(trade_date)
+    await _save_report(result["date"], result["report"])
+    return result
 
 
 async def generate_review_snapshot(trade_date: str = None) -> dict:
-    """生成报告但不写库（预览模式）"""
-    trade_date = trade_date or date.today().isoformat()
-
-    emotion = await _query_emotion(trade_date)
-    limit_up = await _query_limit_up(trade_date)
-    limit_down = await _query_limit_down(trade_date)
-    broken_board = await _query_broken_board(trade_date)
-    dragon = await _query_dragon_tiger(trade_date)
-    capital = await _query_capital_flow(trade_date)
-    strong = await _query_strong_stocks(trade_date)
-    risks = await _query_risk_alarms(trade_date)
-    overview = await _query_market_overview(trade_date)
-
-    overall_score, overall_comment = _calculate_score(
-        emotion, limit_up, limit_down, broken_board, dragon, capital, overview
-    )
-
-    return {
-        "ok": True,
-        "date": trade_date,
-        "report": {
-            "trade_date": trade_date,
-            "market_overview": overview,
-            "emotion_summary": emotion,
-            "limit_up_analysis": limit_up,
-            "limit_down_analysis": limit_down,
-            "broken_board_analysis": broken_board,
-            "dragon_tiger_summary": dragon,
-            "capital_summary": capital,
-            "strong_stocks": strong,
-            "risk_alarms": risks,
-            "overall_score": overall_score,
-            "overall_comment": overall_comment,
-        },
-    }
+    """Read local evidence only; no upstream calls or implicit historical fallback."""
+    from app.services.data_evidence import SH, report_quality
+    from datetime import datetime
+    trade_date = trade_date or datetime.now(SH).date().isoformat()
+    # Sequential queries keep pressure on the shared connection pool bounded.
+    report = {"trade_date": trade_date}
+    for name, query in (
+        ("emotion_summary", _query_emotion), ("limit_up_analysis", _query_limit_up),
+        ("limit_down_analysis", _query_limit_down), ("broken_board_analysis", _query_broken_board),
+        ("dragon_tiger_summary", _query_dragon_tiger), ("capital_summary", _query_capital_flow),
+        ("strong_stocks", _query_strong_stocks), ("risk_alarms", _query_risk_alarms),
+        ("market_overview", _query_market_overview),
+    ):
+        report[name] = await query(trade_date)
+    report["quality"] = report_quality(report)
+    report["overall_score"], report["overall_comment"] = _calculate_score(*(
+        report[k] for k in ("emotion_summary", "limit_up_analysis", "limit_down_analysis",
+                           "broken_board_analysis", "dragon_tiger_summary", "capital_summary", "market_overview")))
+    report["generated_at"] = datetime.now(SH).isoformat()
+    return {"ok": True, "date": trade_date, "report": report}
 
 
 # ═══════════════════════ 查询报告 ═══════════════════════
@@ -128,10 +76,13 @@ async def query_review_list(limit: int = 30, offset: int = 0) -> dict:
         total = count_r.scalar()
 
         result = await conn.execute(text("""
-            SELECT trade_date, overall_score, overall_comment, created_at
+            SELECT *
             FROM review_reports ORDER BY trade_date DESC LIMIT :l OFFSET :o
         """), {"l": limit, "o": offset})
-        rows = [dict(r._mapping) for r in result]
+        rows = []
+        for row in result:
+            report = _row_to_report(row)
+            rows.append({key: report.get(key) for key in ('trade_date','overall_score','overall_comment','created_at')})
 
     return {"ok": True, "total": total, "items": rows}
 
@@ -151,6 +102,7 @@ async def _query_emotion(trade_date: str) -> dict:
     return {
         "available": True,
         "emotion_score": d.get("emotion_score"),
+        "seal_rate": d.get("seal_rate"),
         "cycle_phase": d.get("cycle_phase"),
         "limit_up_count": d.get("limit_up_count"),
         "limit_down_count": d.get("limit_down_count"),
@@ -299,6 +251,7 @@ async def _query_capital_flow(trade_date: str) -> dict:
     return {
         "available": True,
         "total_stocks": s.get("total", 0),
+        "scope": "已采集个股样本，不代表全市场",
         "total_main_net": s.get("total_main_net", 0),
         "total_super_large_net": s.get("total_super_large", 0),
         "total_large_net": s.get("total_large", 0),
@@ -314,7 +267,7 @@ async def _query_strong_stocks(trade_date: str) -> dict:
     async with engine.begin() as conn:
         r = await conn.execute(text("""
             SELECT code, name, pct_chg, amount, turnover, volume_ratio, industry
-            FROM strong_pool WHERE trade_date = :d ORDER BY pct_chg DESC LIMIT 20
+            FROM strong_pool WHERE trade_date = :d ORDER BY pct_chg DESC
         """), {"d": trade_date})
         rows = [dict(row._mapping) for row in r]
     count = len(rows)
@@ -330,7 +283,7 @@ async def _query_strong_stocks(trade_date: str) -> dict:
         "available": True,
         "count": count,
         "industry_distribution": industry_map,
-        "samples": rows,
+        "samples": rows[:20],
     }
 
 
@@ -383,7 +336,7 @@ async def _query_market_overview(trade_date: str) -> dict:
         "fall_count": fall,
         "flat_count": d.get("flat_count", 0),
         "rise_ratio": round(rise / total * 100, 1) if total else 0,
-        "total_amount_yi": round((d.get("total_amount") or 0) / 1e8, 2),
+        "total_amount_yi": round(float(d.get("total_amount") or 0) / 1e8, 2),
         "avg_pct_chg": round(d.get("avg_pct") or 0, 2),
         "max_pct_chg": round(d.get("max_pct") or 0, 2),
         "min_pct_chg": round(d.get("min_pct") or 0, 2),
@@ -393,7 +346,16 @@ async def _query_market_overview(trade_date: str) -> dict:
 # ═══════════════════════ 综合评分 ═══════════════════════
 
 def _calculate_score(emotion, limit_up, limit_down, broken_board, dragon, capital, overview) -> tuple:
-    """综合评分算法 (0-100)"""
+    """Descriptive heuristic; absent evidence must never become a neutral score."""
+    required = ((emotion, '情绪'), (limit_up, '涨停池'), (limit_down, '跌停池'),
+                (broken_board, '炸板池'), (dragon, '龙虎榜'), (capital, '资金'), (overview, '快照'))
+    missing = [name for module, name in required if not module.get('available')]
+    if emotion.get('available') and emotion.get('emotion_score') is None:
+        missing.append('情绪分')
+    if capital.get('available') and capital.get('total_main_net') is None:
+        missing.append('资金净额')
+    if missing:
+        return None, '数据待补齐，暂不评分：' + '、'.join(missing)
     score = 50  # 基准分
     factors = []
 
@@ -406,7 +368,7 @@ def _calculate_score(emotion, limit_up, limit_down, broken_board, dragon, capita
 
     # 情绪分 (+/- 10分)
     if emotion.get("available"):
-        es = emotion.get("emotion_score") or 50
+        es = emotion.get("emotion_score")
         delta = (es - 50) * 0.2
         score += delta
         factors.append(f"情绪{es}分({emotion.get('cycle_phase', '')})")
@@ -460,7 +422,7 @@ def _calculate_score(emotion, limit_up, limit_down, broken_board, dragon, capita
             score += 3
         else:
             score -= 3
-        factors.append(f"主力净{'流入' if main_net > 0 else '流出'}")
+        factors.append(f"已采集样本主力净{'流入' if main_net > 0 else '流出'}")
 
     # 限制范围
     score = max(0, min(100, score))
@@ -529,7 +491,11 @@ def _row_to_report(row) -> dict:
             report[f] = json.loads(raw) if raw else None
         except (json.JSONDecodeError, TypeError):
             report[f] = raw
-    report["overall_score"] = d.get("overall_score")
-    report["overall_comment"] = d.get("overall_comment")
+    from app.services.data_evidence import report_quality
+    report["quality"] = report_quality(report)
+    # Old saved reports are re-evaluated from their own frozen evidence.
+    report["overall_score"], report["overall_comment"] = _calculate_score(*(report.get(k) or {} for k in (
+        "emotion_summary", "limit_up_analysis", "limit_down_analysis", "broken_board_analysis",
+        "dragon_tiger_summary", "capital_summary", "market_overview")))
     report["created_at"] = str(d.get("created_at", ""))
     return report

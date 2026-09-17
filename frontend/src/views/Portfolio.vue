@@ -1,8 +1,8 @@
 <template>
   <div>
     <div class="page-header">
-      <div class="page-title">💼 实盘组合</div>
-      <div class="page-subtitle">{{ date }} · 持仓 · 委托 · 成交 · 风控</div>
+      <div class="page-title">💼 组合记录</div>
+      <div class="page-subtitle">{{ date }} · 本地记录模式 · 未连接券商，不执行真实交易</div>
     </div>
 
     <div class="toolbar">
@@ -104,7 +104,7 @@
                 <div class="order-field"><label>备注</label><input type="text" v-model="orderForm.remark" /></div>
               </div>
               <div style="display:flex;gap:8px;margin-top:12px">
-                <button class="btn btn-primary" @click="doPlaceOrder">📤 提交委托</button>
+                <button class="btn btn-primary" @click="doPlaceOrder">📤 保存本地委托</button>
                 <button class="btn" @click="doCancelAll" style="color:var(--down)">🚫 全部撤单</button>
                 <button class="btn" @click="doClear" style="color:var(--down)">⚠️ 一键清仓</button>
               </div>
