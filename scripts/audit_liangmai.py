@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'backend'))
 from app.liangmai.client import LiangmaiClient
 from app.config import get_settings
-from app.liangmai.parsing import records,source_date
+from app.services.interface_audit import inspect_response
 
 async def run(spec_path,day,output,resume=False):
     spec=json.loads(Path(spec_path).read_text());output=Path(output);output.parent.mkdir(parents=True,exist_ok=True)
@@ -41,9 +41,7 @@ async def run(spec_path,day,output,resume=False):
         if missing:results.append(base|{'status':'untested','reason':'缺少文档样本参数：'+','.join(missing)});save();return
         async with sem:
             r=await client.call(api,params,ttl=0)
-        data=r.get('data');rs=records(data);dates=sorted({d for x in rs for k in ('t','time','trade_date','date','date1') if (d:=source_date(x.get(k)))})
-        count=len(data) if isinstance(data,(list,dict)) else 0
-        results.append(base|{'status':('ready' if count else 'empty') if r.get('ok') else 'error','code':r.get('code'),'rows_or_keys':count,'fields':list(rs[0])[:40] if rs else list(data)[:40] if isinstance(data,dict) else [],'first_date':dates[0] if dates else None,'last_date':dates[-1] if dates else None,'elapsed_ms':r.get('_meta',{}).get('elapsedMs'),'reason':r.get('msg','')})
+        results.append(base|inspect_response(api,r,day))
         save();print(f'{len(results)}/{len(spec["paths"])} {api} {results[-1]["status"]}',flush=True)
     try:await asyncio.gather(*(probe(path,v['post']) for path,v in spec['paths'].items() if 'post' in v))
     finally:await client.close()

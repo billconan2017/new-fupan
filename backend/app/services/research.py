@@ -70,7 +70,10 @@ async def preparation(day):
 def audit_report():
     p=REPORT_DIR/'interface_audit.json'
     if not p.exists():return {'items':[],'total':255,'completed':0,'counts':{},'scope':'尚未运行目录审计'}
-    return json.loads(p.read_text())
+    from app.services.interface_audit import enrich_report
+    catalog=json.loads((Path(__file__).resolve().parents[1]/'liangmai'/'catalog.json').read_text())
+    focused=REPORT_DIR/'trading_capability_audit.json'
+    return enrich_report(json.loads(p.read_text()),catalog,json.loads(focused.read_text()) if focused.exists() else None)
 
 def history_report():
     p=REPORT_DIR/'history_study.json'

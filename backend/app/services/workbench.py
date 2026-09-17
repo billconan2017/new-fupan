@@ -115,7 +115,9 @@ async def build(day,phase='live',mode='short'):
     identities={code_of(r):r for r in records(data('basic_stock_list'))}
     universe=set(identities)
     rows=[]
-    candidates=list(auctions.values()) if phase=='pre' else snapshot_records(data('market_snapshot_all'))
+    from app.services.interface_audit import merge_quotes
+    targeted=[r for k in ev if k.startswith('market_quote:') for r in records(data(k))]
+    candidates=list(auctions.values()) if phase=='pre' else merge_quotes(snapshot_records(data('market_snapshot_all')),targeted,day)
     for r in candidates:
         code=code_of(r)
         if not code or code not in universe:continue
@@ -131,6 +133,7 @@ async def build(day,phase='live',mode='short'):
              'turnover':None if phase=='pre' else value(r,'hs','turnover'),
              'open':None if phase=='pre' else value(r,'o','open'),
              'source_at':None if phase=='pre' else r.get('t'),
+             'quote_api':r.get('_quote_api','market_snapshot_all'),
              'auction_pct':value(a,'qczf'),'auction_amount':value(a,'qccje'),'auction_order':value(a,'qcwtje'),
              'consecutive':value(p,'Lbc','lbc','consecutive'),
              'in_pool':code in pool_map,'strong':code in strong_map,
@@ -219,6 +222,8 @@ async def collect(job,day,stage,codes):
                 previous=max((source_date(d) for d in cal if source_date(d) and source_date(d)<day),default=None)
                 if not previous:raise ValueError('请先采集交易日历')
                 calls=[('kline_history:'+code,'kline_history',{'full_code':code,'interval':'d','cq':'f','lt':100,'et':previous.replace('-','')}) for code in codes]
+            elif stage=='watchquote':
+                calls=[('market_quote:'+code,'market_quote',{'ts_code':code}) for code in codes]
             elif stage=='quote':
                 calls=[('market_snapshot_all','market_snapshot_all',{})]
             else:
@@ -240,6 +245,8 @@ async def collect(job,day,stage,codes):
             async with engine.begin() as c:await c.execute(text('UPDATE wb_jobs SET total=:n WHERE id=:id'),{'n':len(calls),'id':job})
             for key,api,params in calls:
                 r=await liangmai.call(api,params,ttl=0)
+                if api=='market_quote' and r.get('ok') and isinstance(r.get('data'),dict):
+                    r={**r,'data':[{**r['data'],'dm':params['ts_code'],'_quote_api':'market_quote'}]}
                 if not r.get('ok'):r=await local_fallback(key,day,r)
                 item=await save_evidence(key,day,r);results.append(item)
                 await update_job(job,results,len(calls)+extra_total)

@@ -17,14 +17,14 @@ async def screen(day: date | None=None,phase: Literal['pre','live','review']='li
 class Collection(BaseModel):
     model_config=ConfigDict(extra='forbid')
     day: date
-    stage: Literal['pre','live','review','history','quote','execution']
+    stage: Literal['pre','live','review','history','quote','execution','watchquote']
     codes: list[str]=Field(default_factory=list,max_length=20)
 
 @router.post('/collect')
 async def collect(body: Collection):
     if body.day>datetime.now(SH).date():raise HTTPException(422,'不能采集未来日期')
-    if body.stage=='quote' and body.day!=datetime.now(SH).date():raise HTTPException(422,'快照只支持当前日期')
-    if body.stage in ('history','execution') and (not body.codes or any(len(c)!=6 or not c.isdigit() for c in body.codes)):
+    if body.stage in ('quote','watchquote') and body.day!=datetime.now(SH).date():raise HTTPException(422,'行情只支持当前日期')
+    if body.stage in ('history','execution','watchquote') and (not body.codes or any(len(c)!=6 or not c.isdigit() for c in body.codes)):
         raise HTTPException(422,'请选择1至20只六位股票代码')
     return await service.start_job(body.day.isoformat(),body.stage,list(dict.fromkeys(body.codes)))
 
@@ -90,6 +90,11 @@ async def preparation(day:date):
 async def interface_audit():
     from app.services.research import audit_report
     return audit_report()
+
+@router.get('/legacy-research')
+def legacy_research(day:date):
+    from app.services.legacy_research import report
+    return report(day.isoformat())
 
 @router.get('/history-study')
 async def history_study():

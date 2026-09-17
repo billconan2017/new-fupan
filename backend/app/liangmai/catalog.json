@@ -3,16 +3,20 @@
   "retrieved": "2026-09-17",
   "endpoints": {
     "basic_stock_list": {
-      "params": {}
+      "params": {},
+      "category": "基础列表与交易日历"
     },
     "basic_hs_list": {
-      "params": {}
+      "params": {},
+      "category": "基础列表与交易日历"
     },
     "basic_ipo_calendar": {
-      "params": {}
+      "params": {},
+      "category": "基础列表与交易日历"
     },
     "sector_catalog": {
-      "params": {}
+      "params": {},
+      "category": "板块与概念"
     },
     "sector_members": {
       "params": {
@@ -20,7 +24,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "板块与概念"
     },
     "sector_of_stock": {
       "params": {
@@ -28,28 +33,36 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "板块与概念"
     },
     "basic_index_list": {
-      "params": {}
+      "params": {},
+      "category": "基础列表与交易日历"
     },
     "basic_bj_stock_list": {
-      "params": {}
+      "params": {},
+      "category": "基础列表与交易日历"
     },
     "basic_bj_index_list": {
-      "params": {}
+      "params": {},
+      "category": "基础列表与交易日历"
     },
     "basic_hk_stock_list": {
-      "params": {}
+      "params": {},
+      "category": "基础列表与交易日历"
     },
     "basic_kc_stock_list": {
-      "params": {}
+      "params": {},
+      "category": "基础列表与交易日历"
     },
     "basic_fund_list": {
-      "params": {}
+      "params": {},
+      "category": "基础列表与交易日历"
     },
     "basic_etf_list": {
-      "params": {}
+      "params": {},
+      "category": "基础列表与交易日历"
     },
     "stockpool_limit_up": {
       "params": {
@@ -58,7 +71,8 @@
           "type": "string",
           "format": "date"
         }
-      }
+      },
+      "category": "股池"
     },
     "stockpool_limit_down": {
       "params": {
@@ -67,7 +81,8 @@
           "type": "string",
           "format": "date"
         }
-      }
+      },
+      "category": "股池"
     },
     "stockpool_strong": {
       "params": {
@@ -76,7 +91,8 @@
           "type": "string",
           "format": "date"
         }
-      }
+      },
+      "category": "股池"
     },
     "stockpool_subnew": {
       "params": {
@@ -85,7 +101,8 @@
           "type": "string",
           "format": "date"
         }
-      }
+      },
+      "category": "股池"
     },
     "stockpool_broken_board": {
       "params": {
@@ -94,7 +111,8 @@
           "type": "string",
           "format": "date"
         }
-      }
+      },
+      "category": "股池"
     },
     "corp_profile": {
       "params": {
@@ -102,7 +120,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "公司资料（基本面）"
     },
     "corp_index_membership": {
       "params": {
@@ -110,7 +129,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "公司资料（基本面）"
     },
     "corp_exec_history": {
       "params": {
@@ -118,7 +138,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "公司资料（基本面）"
     },
     "corp_board_history": {
       "params": {
@@ -126,7 +147,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "公司资料（基本面）"
     },
     "corp_supervisor_history": {
       "params": {
@@ -134,7 +156,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "公司资料（基本面）"
     },
     "corp_dividend": {
       "params": {
@@ -142,7 +165,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "公司资料（基本面）"
     },
     "corp_issue": {
       "params": {
@@ -150,7 +174,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "公司资料（基本面）"
     },
     "corp_unlock": {
       "params": {
@@ -158,7 +183,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "公司资料（基本面）"
     },
     "corp_quarter_profit": {
       "params": {
@@ -166,7 +192,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "公司资料（基本面）"
     },
     "corp_quarter_cashflow": {
       "params": {
@@ -174,7 +201,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "公司资料（基本面）"
     },
     "corp_forecast": {
       "params": {
@@ -182,7 +210,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "公司资料（基本面）"
     },
     "corp_finance_metrics": {
       "params": {
@@ -190,7 +219,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "公司资料（基本面）"
     },
     "corp_top10_holders": {
       "params": {
@@ -198,7 +228,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "公司资料（基本面）"
     },
     "corp_top10_float_holders": {
       "params": {
@@ -206,7 +237,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "公司资料（基本面）"
     },
     "corp_holder_trend": {
       "params": {
@@ -214,7 +246,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "公司资料（基本面）"
     },
     "corp_fund_holdings": {
       "params": {
@@ -222,7 +255,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "公司资料（基本面）"
     },
     "market_quote": {
       "params": {
@@ -230,7 +264,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "实时行情与盘口"
     },
     "market_tick_today": {
       "params": {
@@ -238,7 +273,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "实时行情与盘口"
     },
     "market_tick_history": {
       "params": {
@@ -251,7 +287,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "实时行情与盘口"
     },
     "market_tick_bj_today": {
       "params": {
@@ -259,7 +296,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "实时行情与盘口"
     },
     "market_tick_bj_history": {
       "params": {
@@ -272,7 +310,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "实时行情与盘口"
     },
     "market_quote_multi": {
       "params": {
@@ -280,7 +319,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "实时行情与盘口"
     },
     "market_quote_pro": {
       "params": {
@@ -288,7 +328,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "实时行情与盘口"
     },
     "market_five": {
       "params": {
@@ -296,7 +337,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "实时行情与盘口"
     },
     "flow_stock_history": {
       "params": {
@@ -318,7 +360,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "资金流向"
     },
     "kline_latest": {
       "params": {
@@ -358,7 +401,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "K线与分时"
     },
     "kline_history": {
       "params": {
@@ -408,7 +452,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "K线与分时"
     },
     "kline_stop_price_history": {
       "params": {
@@ -430,7 +475,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "K线与分时"
     },
     "market_indicator": {
       "params": {
@@ -452,7 +498,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "实时行情与盘口"
     },
     "basic_stock_instrument": {
       "params": {
@@ -460,7 +507,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "基础列表与交易日历"
     },
     "finance_balance_sheet": {
       "params": {
@@ -482,7 +530,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "财务报表"
     },
     "finance_income_statement": {
       "params": {
@@ -504,7 +553,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "财务报表"
     },
     "finance_cashflow_statement": {
       "params": {
@@ -526,7 +576,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "财务报表"
     },
     "finance_per_share_index": {
       "params": {
@@ -548,7 +599,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "财务报表"
     },
     "finance_capital_structure": {
       "params": {
@@ -570,7 +622,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "财务报表"
     },
     "finance_top10_holders": {
       "params": {
@@ -592,7 +645,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "财务报表"
     },
     "finance_top10_float_holders": {
       "params": {
@@ -614,7 +668,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "财务报表"
     },
     "finance_holder_counts": {
       "params": {
@@ -636,7 +691,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "财务报表"
     },
     "indicator_macd": {
       "params": {
@@ -685,7 +741,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "技术指标"
     },
     "indicator_ma": {
       "params": {
@@ -734,7 +791,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "技术指标"
     },
     "indicator_boll": {
       "params": {
@@ -783,7 +841,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "技术指标"
     },
     "indicator_kdj": {
       "params": {
@@ -832,7 +891,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "技术指标"
     },
     "indicator_ma_legacy": {
       "params": {
@@ -882,7 +942,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "技术指标"
     },
     "idx_realtime": {
       "params": {
@@ -890,7 +951,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "指数行情"
     },
     "idx_bars_latest": {
       "params": {
@@ -918,7 +980,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "指数行情"
     },
     "idx_bars_history": {
       "params": {
@@ -956,7 +1019,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "指数行情"
     },
     "idx_macd": {
       "params": {
@@ -994,7 +1058,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "指数行情"
     },
     "idx_ma": {
       "params": {
@@ -1032,7 +1097,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "指数行情"
     },
     "idx_boll": {
       "params": {
@@ -1070,7 +1136,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "指数行情"
     },
     "idx_kdj": {
       "params": {
@@ -1108,7 +1175,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "指数行情"
     },
     "market_bj_quote": {
       "params": {
@@ -1116,7 +1184,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "多市场行情（京/港/科创/基金）"
     },
     "market_bj_five": {
       "params": {
@@ -1124,7 +1193,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "多市场行情（京/港/科创/基金）"
     },
     "market_hk_quote": {
       "params": {
@@ -1132,7 +1202,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "多市场行情（京/港/科创/基金）"
     },
     "market_hk_five": {
       "params": {
@@ -1140,7 +1211,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "多市场行情（京/港/科创/基金）"
     },
     "market_kc_quote": {
       "params": {
@@ -1148,7 +1220,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "多市场行情（京/港/科创/基金）"
     },
     "market_kc_five": {
       "params": {
@@ -1156,7 +1229,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "多市场行情（京/港/科创/基金）"
     },
     "market_fund_quote": {
       "params": {
@@ -1164,16 +1238,20 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "多市场行情（京/港/科创/基金）"
     },
     "market_snapshot_all": {
-      "params": {}
+      "params": {},
+      "category": "实时行情与盘口"
     },
     "sector_index_list": {
-      "params": {}
+      "params": {},
+      "category": "板块与概念"
     },
     "sector_primary_list": {
-      "params": {}
+      "params": {},
+      "category": "板块与概念"
     },
     "sector_detail_list": {
       "params": {
@@ -1181,7 +1259,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "板块与概念"
     },
     "basic_trade_calendar": {
       "params": {
@@ -1189,10 +1268,12 @@
           "required": true,
           "type": "integer"
         }
-      }
+      },
+      "category": "基础列表与交易日历"
     },
     "market_quote_all": {
-      "params": {}
+      "params": {},
+      "category": "实时行情与盘口"
     },
     "kline_vip_history": {
       "params": {
@@ -1242,7 +1323,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "K线与分时"
     },
     "market_limit_perf": {
       "params": {
@@ -1250,7 +1332,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "实时行情与盘口"
     },
     "auction_limit_perf": {
       "params": {
@@ -1258,7 +1341,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "集合竞价与抢筹"
     },
     "announcement_interactive_qa": {
       "params": {
@@ -1280,7 +1364,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "公告与互动"
     },
     "announcement_list": {
       "params": {
@@ -1302,31 +1387,40 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "公告与互动"
     },
     "trade_daily_tips": {
-      "params": {}
+      "params": {},
+      "category": "交易提示"
     },
     "trade_margin_total": {
-      "params": {}
+      "params": {},
+      "category": "交易提示"
     },
     "trade_margin_detail": {
-      "params": {}
+      "params": {},
+      "category": "交易提示"
     },
     "trade_block_deal": {
-      "params": {}
+      "params": {},
+      "category": "交易提示"
     },
     "trade_unlock": {
-      "params": {}
+      "params": {},
+      "category": "交易提示"
     },
     "trade_ipo_profit": {
-      "params": {}
+      "params": {},
+      "category": "交易提示"
     },
     "trade_dividend_history": {
-      "params": {}
+      "params": {},
+      "category": "交易提示"
     },
     "lhb_daily_detail": {
-      "params": {}
+      "params": {},
+      "category": "龙虎榜、席位与游资"
     },
     "lhb_stock_stat": {
       "params": {
@@ -1334,7 +1428,8 @@
           "required": true,
           "type": "integer"
         }
-      }
+      },
+      "category": "龙虎榜、席位与游资"
     },
     "lhb_branch_stat": {
       "params": {
@@ -1342,7 +1437,8 @@
           "required": true,
           "type": "integer"
         }
-      }
+      },
+      "category": "龙虎榜、席位与游资"
     },
     "lhb_institution_track": {
       "params": {
@@ -1350,61 +1446,80 @@
           "required": true,
           "type": "integer"
         }
-      }
+      },
+      "category": "龙虎榜、席位与游资"
     },
     "lhb_institution_detail": {
-      "params": {}
+      "params": {},
+      "category": "龙虎榜、席位与游资"
     },
     "monitor_stage_high_low": {
-      "params": {}
+      "params": {},
+      "category": "盘中监控与涨跌排名"
     },
     "monitor_new_high": {
-      "params": {}
+      "params": {},
+      "category": "盘中监控与涨跌排名"
     },
     "monitor_new_low": {
-      "params": {}
+      "params": {},
+      "category": "盘中监控与涨跌排名"
     },
     "monitor_turnover_surge": {
-      "params": {}
+      "params": {},
+      "category": "盘中监控与涨跌排名"
     },
     "monitor_turnover_slump": {
-      "params": {}
+      "params": {},
+      "category": "盘中监控与涨跌排名"
     },
     "monitor_volume_surge_days": {
-      "params": {}
+      "params": {},
+      "category": "盘中监控与涨跌排名"
     },
     "monitor_volume_slump_days": {
-      "params": {}
+      "params": {},
+      "category": "盘中监控与涨跌排名"
     },
     "monitor_rise_days": {
-      "params": {}
+      "params": {},
+      "category": "盘中监控与涨跌排名"
     },
     "monitor_fall_days": {
-      "params": {}
+      "params": {},
+      "category": "盘中监控与涨跌排名"
     },
     "monitor_week_change_rank": {
-      "params": {}
+      "params": {},
+      "category": "盘中监控与涨跌排名"
     },
     "monitor_month_change_rank": {
-      "params": {}
+      "params": {},
+      "category": "盘中监控与涨跌排名"
     },
     "monitor_week_strong": {
-      "params": {}
+      "params": {},
+      "category": "盘中监控与涨跌排名"
     },
     "monitor_month_strong": {
-      "params": {}
+      "params": {},
+      "category": "盘中监控与涨跌排名"
     },
     "monitor_float_cap_rank": {
-      "params": {}
+      "params": {},
+      "category": "盘中监控与涨跌排名"
     },
     "monitor_pe_rank": {
-      "params": {}
+      "params": {},
+      "category": "盘中监控与涨跌排名"
     },
     "monitor_pb_rank": {
-      "params": {}
+      "params": {},
+      "category": "盘中监控与涨跌排名"
     },
     "monitor_roe_rank": {
-      "params": {}
+      "params": {},
+      "category": "盘中监控与涨跌排名"
     },
     "rank_profit_ability": {
       "params": {
@@ -1422,7 +1537,8 @@
             "4"
           ]
         }
-      }
+      },
+      "category": "财务业绩排行"
     },
     "rank_operation_ability": {
       "params": {
@@ -1440,7 +1556,8 @@
             "4"
           ]
         }
-      }
+      },
+      "category": "财务业绩排行"
     },
     "rank_growth_ability": {
       "params": {
@@ -1458,7 +1575,8 @@
             "4"
           ]
         }
-      }
+      },
+      "category": "财务业绩排行"
     },
     "rank_solvency": {
       "params": {
@@ -1476,7 +1594,8 @@
             "4"
           ]
         }
-      }
+      },
+      "category": "财务业绩排行"
     },
     "rank_cashflow": {
       "params": {
@@ -1494,7 +1613,8 @@
             "4"
           ]
         }
-      }
+      },
+      "category": "财务业绩排行"
     },
     "rank_report": {
       "params": {
@@ -1512,7 +1632,8 @@
             "4"
           ]
         }
-      }
+      },
+      "category": "财务业绩排行"
     },
     "rank_forecast": {
       "params": {
@@ -1530,7 +1651,8 @@
             "4"
           ]
         }
-      }
+      },
+      "category": "财务业绩排行"
     },
     "rank_express": {
       "params": {
@@ -1548,10 +1670,12 @@
             "4"
           ]
         }
-      }
+      },
+      "category": "财务业绩排行"
     },
     "rank_profit_breakdown": {
-      "params": {}
+      "params": {},
+      "category": "财务业绩排行"
     },
     "holding_institution_summary": {
       "params": {
@@ -1569,7 +1693,8 @@
             "4"
           ]
         }
-      }
+      },
+      "category": "机构持仓"
     },
     "holding_fund": {
       "params": {
@@ -1587,7 +1712,8 @@
             "4"
           ]
         }
-      }
+      },
+      "category": "机构持仓"
     },
     "holding_social_security": {
       "params": {
@@ -1605,7 +1731,8 @@
             "4"
           ]
         }
-      }
+      },
+      "category": "机构持仓"
     },
     "holding_qfii": {
       "params": {
@@ -1623,40 +1750,52 @@
             "4"
           ]
         }
-      }
+      },
+      "category": "机构持仓"
     },
     "sector_csrc_industry": {
-      "params": {}
+      "params": {},
+      "category": "板块与概念"
     },
     "sector_concept_list": {
-      "params": {}
+      "params": {},
+      "category": "板块与概念"
     },
     "flow_net_inflow_rank": {
-      "params": {}
+      "params": {},
+      "category": "资金流向"
     },
     "flow_net_inflow_rate_rank": {
-      "params": {}
+      "params": {},
+      "category": "资金流向"
     },
     "flow_main_inflow_rank": {
-      "params": {}
+      "params": {},
+      "category": "资金流向"
     },
     "flow_main_inflow_rate_rank": {
-      "params": {}
+      "params": {},
+      "category": "资金流向"
     },
     "flow_retail_inflow_rank": {
-      "params": {}
+      "params": {},
+      "category": "资金流向"
     },
     "flow_retail_inflow_rate_rank": {
-      "params": {}
+      "params": {},
+      "category": "资金流向"
     },
     "flow_csrc_industry": {
-      "params": {}
+      "params": {},
+      "category": "资金流向"
     },
     "flow_sector_map": {
-      "params": {}
+      "params": {},
+      "category": "资金流向"
     },
     "flow_stock_stage_overview": {
-      "params": {}
+      "params": {},
+      "category": "资金流向"
     },
     "flow_stock_stage": {
       "params": {
@@ -1664,13 +1803,16 @@
           "required": true,
           "type": "integer"
         }
-      }
+      },
+      "category": "资金流向"
     },
     "flow_main_consecutive": {
-      "params": {}
+      "params": {},
+      "category": "资金流向"
     },
     "northbound_flow_overview": {
-      "params": {}
+      "params": {},
+      "category": "北向/南向资金（沪深港通）"
     },
     "northbound_north_trend": {
       "params": {
@@ -1684,7 +1826,8 @@
             "all"
           ]
         }
-      }
+      },
+      "category": "北向/南向资金（沪深港通）"
     },
     "northbound_south_trend": {
       "params": {
@@ -1698,40 +1841,52 @@
             "all"
           ]
         }
-      }
+      },
+      "category": "北向/南向资金（沪深港通）"
     },
     "northbound_north_history": {
-      "params": {}
+      "params": {},
+      "category": "北向/南向资金（沪深港通）"
     },
     "northbound_south_history": {
-      "params": {}
+      "params": {},
+      "category": "北向/南向资金（沪深港通）"
     },
     "northbound_sh_component": {
-      "params": {}
+      "params": {},
+      "category": "北向/南向资金（沪深港通）"
     },
     "northbound_sz_component": {
-      "params": {}
+      "params": {},
+      "category": "北向/南向资金（沪深港通）"
     },
     "northbound_hk_component_sh": {
-      "params": {}
+      "params": {},
+      "category": "北向/南向资金（沪深港通）"
     },
     "northbound_hk_component_sz": {
-      "params": {}
+      "params": {},
+      "category": "北向/南向资金（沪深港通）"
     },
     "northbound_ah_premium": {
-      "params": {}
+      "params": {},
+      "category": "北向/南向资金（沪深港通）"
     },
     "northbound_sh_top10": {
-      "params": {}
+      "params": {},
+      "category": "北向/南向资金（沪深港通）"
     },
     "northbound_sz_top10": {
-      "params": {}
+      "params": {},
+      "category": "北向/南向资金（沪深港通）"
     },
     "northbound_hk_top10_sh": {
-      "params": {}
+      "params": {},
+      "category": "北向/南向资金（沪深港通）"
     },
     "northbound_hk_top10_sz": {
-      "params": {}
+      "params": {},
+      "category": "北向/南向资金（沪深港通）"
     },
     "northbound_north_rank": {
       "params": {
@@ -1748,7 +1903,8 @@
             "y"
           ]
         }
-      }
+      },
+      "category": "北向/南向资金（沪深港通）"
     },
     "northbound_sh_rank": {
       "params": {
@@ -1765,7 +1921,8 @@
             "y"
           ]
         }
-      }
+      },
+      "category": "北向/南向资金（沪深港通）"
     },
     "northbound_sz_rank": {
       "params": {
@@ -1782,28 +1939,36 @@
             "y"
           ]
         }
-      }
+      },
+      "category": "北向/南向资金（沪深港通）"
     },
     "northbound_sh_history": {
-      "params": {}
+      "params": {},
+      "category": "北向/南向资金（沪深港通）"
     },
     "northbound_sz_history": {
-      "params": {}
+      "params": {},
+      "category": "北向/南向资金（沪深港通）"
     },
     "northbound_hk_history_sh": {
-      "params": {}
+      "params": {},
+      "category": "北向/南向资金（沪深港通）"
     },
     "northbound_hk_history_sz": {
-      "params": {}
+      "params": {},
+      "category": "北向/南向资金（沪深港通）"
     },
     "bond_list": {
-      "params": {}
+      "params": {},
+      "category": "可转债"
     },
     "bond_comparison": {
-      "params": {}
+      "params": {},
+      "category": "可转债"
     },
     "bond_quote": {
-      "params": {}
+      "params": {},
+      "category": "可转债"
     },
     "idx_bj_realtime": {
       "params": {
@@ -1811,7 +1976,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "指数行情"
     },
     "market_bj_kline": {
       "params": {
@@ -1860,7 +2026,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "多市场行情（京/港/科创/基金）"
     },
     "finance_bj_balance_sheet": {
       "params": {
@@ -1882,7 +2049,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "财务报表"
     },
     "finance_bj_income_statement": {
       "params": {
@@ -1904,7 +2072,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "财务报表"
     },
     "finance_bj_cashflow_statement": {
       "params": {
@@ -1926,7 +2095,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "财务报表"
     },
     "finance_bj_per_share_index": {
       "params": {
@@ -1948,7 +2118,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "财务报表"
     },
     "finance_bj_capital_structure": {
       "params": {
@@ -1970,7 +2141,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "财务报表"
     },
     "finance_bj_top10_holders": {
       "params": {
@@ -1992,7 +2164,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "财务报表"
     },
     "finance_bj_top10_float_holders": {
       "params": {
@@ -2014,7 +2187,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "财务报表"
     },
     "finance_bj_holder_counts": {
       "params": {
@@ -2036,7 +2210,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "财务报表"
     },
     "indicator_bj_macd": {
       "params": {
@@ -2085,7 +2260,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "技术指标"
     },
     "indicator_bj_ma": {
       "params": {
@@ -2134,7 +2310,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "技术指标"
     },
     "indicator_bj_boll": {
       "params": {
@@ -2183,7 +2360,8 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "技术指标"
     },
     "indicator_bj_kdj": {
       "params": {
@@ -2232,13 +2410,16 @@
           "required": false,
           "type": "integer"
         }
-      }
+      },
+      "category": "技术指标"
     },
     "fund_list": {
-      "params": {}
+      "params": {},
+      "category": "基金数据"
     },
     "fund_valuation_list": {
-      "params": {}
+      "params": {},
+      "category": "基金数据"
     },
     "fund_intraday_valuation": {
       "params": {
@@ -2246,16 +2427,20 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "基金数据"
     },
     "fund_closed_list": {
-      "params": {}
+      "params": {},
+      "category": "基金数据"
     },
     "fund_etf_list": {
-      "params": {}
+      "params": {},
+      "category": "基金数据"
     },
     "fund_lof_list": {
-      "params": {}
+      "params": {},
+      "category": "基金数据"
     },
     "fund_kline_latest": {
       "params": {
@@ -2274,7 +2459,8 @@
           ],
           "default": "Day"
         }
-      }
+      },
+      "category": "基金数据"
     },
     "fund_kline_history": {
       "params": {
@@ -2293,7 +2479,8 @@
           ],
           "default": "Day"
         }
-      }
+      },
+      "category": "基金数据"
     },
     "fund_ma_latest": {
       "params": {
@@ -2312,7 +2499,8 @@
           ],
           "default": "Day"
         }
-      }
+      },
+      "category": "基金数据"
     },
     "fund_ma_history": {
       "params": {
@@ -2331,7 +2519,8 @@
           ],
           "default": "Day"
         }
-      }
+      },
+      "category": "基金数据"
     },
     "fund_profile": {
       "params": {
@@ -2339,7 +2528,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "基金数据"
     },
     "fund_nav_history": {
       "params": {
@@ -2347,7 +2537,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "基金数据"
     },
     "fund_stock_holding": {
       "params": {
@@ -2355,7 +2546,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "基金数据"
     },
     "fund_bond_holding": {
       "params": {
@@ -2363,43 +2555,56 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "基金数据"
     },
     "fund_nav_rank_open": {
-      "params": {}
+      "params": {},
+      "category": "基金数据"
     },
     "fund_nav_rank_open_yield": {
-      "params": {}
+      "params": {},
+      "category": "基金数据"
     },
     "fund_nav_rank_closed": {
-      "params": {}
+      "params": {},
+      "category": "基金数据"
     },
     "fund_perf_rank_open": {
-      "params": {}
+      "params": {},
+      "category": "基金数据"
     },
     "fund_perf_rank_closed": {
-      "params": {}
+      "params": {},
+      "category": "基金数据"
     },
     "fund_perf_rank_graded": {
-      "params": {}
+      "params": {},
+      "category": "基金数据"
     },
     "fund_dividend_open": {
-      "params": {}
+      "params": {},
+      "category": "基金数据"
     },
     "fund_dividend_closed": {
-      "params": {}
+      "params": {},
+      "category": "基金数据"
     },
     "fund_dividend_graded": {
-      "params": {}
+      "params": {},
+      "category": "基金数据"
     },
     "fund_scale_open": {
-      "params": {}
+      "params": {},
+      "category": "基金数据"
     },
     "fund_scale_closed": {
-      "params": {}
+      "params": {},
+      "category": "基金数据"
     },
     "fund_scale_graded": {
-      "params": {}
+      "params": {},
+      "category": "基金数据"
     },
     "fund_heavy_holding": {
       "params": {
@@ -2407,7 +2612,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "基金数据"
     },
     "fund_heavy_holding_change": {
       "params": {
@@ -2415,13 +2621,16 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "基金数据"
     },
     "fund_distributor": {
-      "params": {}
+      "params": {},
+      "category": "基金数据"
     },
     "factors_categories": {
-      "params": {}
+      "params": {},
+      "category": "因子"
     },
     "factors_valuation": {
       "params": {
@@ -2429,7 +2638,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "因子"
     },
     "factors_quality": {
       "params": {
@@ -2437,7 +2647,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "因子"
     },
     "factors_growth": {
       "params": {
@@ -2445,7 +2656,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "因子"
     },
     "factors_momentum": {
       "params": {
@@ -2453,7 +2665,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "因子"
     },
     "factors_capital": {
       "params": {
@@ -2461,7 +2674,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "因子"
     },
     "factors_signal": {
       "params": {
@@ -2469,7 +2683,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "因子"
     },
     "factors_risk": {
       "params": {
@@ -2477,7 +2692,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "因子"
     },
     "factors_dividend": {
       "params": {
@@ -2485,7 +2701,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "因子"
     },
     "factors_scale": {
       "params": {
@@ -2493,7 +2710,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "因子"
     },
     "factors_sentiment": {
       "params": {
@@ -2501,7 +2719,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "因子"
     },
     "factors_all": {
       "params": {
@@ -2509,7 +2728,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "因子"
     },
     "factors_rank": {
       "params": {
@@ -2517,7 +2737,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "因子"
     },
     "factors_top": {
       "params": {
@@ -2529,7 +2750,8 @@
           "required": true,
           "type": "integer"
         }
-      }
+      },
+      "category": "因子"
     },
     "factors_history": {
       "params": {
@@ -2541,7 +2763,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "因子"
     },
     "factors_percentile": {
       "params": {
@@ -2553,7 +2776,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "因子"
     },
     "lhb_daily": {
       "params": {
@@ -2562,7 +2786,8 @@
           "type": "string",
           "format": "date"
         }
-      }
+      },
+      "category": "龙虎榜、席位与游资"
     },
     "lhb_trader_record_history": {
       "params": {
@@ -2575,7 +2800,8 @@
           "type": "string",
           "format": "date"
         }
-      }
+      },
+      "category": "龙虎榜、席位与游资"
     },
     "lhb_stock_trader_records": {
       "params": {
@@ -2593,7 +2819,8 @@
           "type": "string",
           "format": "date"
         }
-      }
+      },
+      "category": "龙虎榜、席位与游资"
     },
     "lhb_trader_records": {
       "params": {
@@ -2602,10 +2829,12 @@
           "type": "string",
           "format": "date"
         }
-      }
+      },
+      "category": "龙虎榜、席位与游资"
     },
     "lhb_trader_names": {
-      "params": {}
+      "params": {},
+      "category": "龙虎榜、席位与游资"
     },
     "auction_morning_sector": {
       "params": {
@@ -2623,7 +2852,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "集合竞价与抢筹"
     },
     "auction_morning_sector_pro": {
       "params": {
@@ -2632,7 +2862,8 @@
           "type": "string",
           "format": "date"
         }
-      }
+      },
+      "category": "集合竞价与抢筹"
     },
     "auction_morning_sector_members_pro": {
       "params": {
@@ -2645,7 +2876,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "集合竞价与抢筹"
     },
     "auction_morning_sector_members": {
       "params": {
@@ -2663,7 +2895,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "集合竞价与抢筹"
     },
     "auction_morning_grab_amount": {
       "params": {
@@ -2690,7 +2923,8 @@
             "4"
           ]
         }
-      }
+      },
+      "category": "集合竞价与抢筹"
     },
     "auction_morning_grab_turnover": {
       "params": {
@@ -2718,7 +2952,8 @@
           ],
           "default": "2"
         }
-      }
+      },
+      "category": "集合竞价与抢筹"
     },
     "auction_morning_grab_open": {
       "params": {
@@ -2746,7 +2981,8 @@
           ],
           "default": "3"
         }
-      }
+      },
+      "category": "集合竞价与抢筹"
     },
     "auction_morning_grab_change": {
       "params": {
@@ -2774,7 +3010,8 @@
           ],
           "default": "4"
         }
-      }
+      },
+      "category": "集合竞价与抢筹"
     },
     "auction_tail_grab_amount": {
       "params": {
@@ -2803,7 +3040,8 @@
           ],
           "default": "1"
         }
-      }
+      },
+      "category": "集合竞价与抢筹"
     },
     "auction_tail_grab_turnover": {
       "params": {
@@ -2832,7 +3070,8 @@
           ],
           "default": "2"
         }
-      }
+      },
+      "category": "集合竞价与抢筹"
     },
     "auction_tail_grab_close": {
       "params": {
@@ -2861,7 +3100,8 @@
           ],
           "default": "3"
         }
-      }
+      },
+      "category": "集合竞价与抢筹"
     },
     "auction_tail_grab_change": {
       "params": {
@@ -2890,7 +3130,8 @@
           ],
           "default": "4"
         }
-      }
+      },
+      "category": "集合竞价与抢筹"
     },
     "auction_one_word_limit": {
       "params": {
@@ -2899,16 +3140,20 @@
           "type": "string",
           "format": "date"
         }
-      }
+      },
+      "category": "集合竞价与抢筹"
     },
     "basic_st_list": {
-      "params": {}
+      "params": {},
+      "category": "基础列表与交易日历"
     },
     "sector_concept_code": {
-      "params": {}
+      "params": {},
+      "category": "板块与概念"
     },
     "sector_plate_code": {
-      "params": {}
+      "params": {},
+      "category": "板块与概念"
     },
     "flow_sector_history": {
       "params": {
@@ -2916,7 +3161,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "资金流向"
     },
     "sector_member_list": {
       "params": {
@@ -2932,7 +3178,8 @@
           "required": true,
           "type": "integer"
         }
-      }
+      },
+      "category": "板块与概念"
     },
     "anomaly_all_history": {
       "params": {
@@ -2950,7 +3197,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "异动、人气与情绪"
     },
     "anomaly_stock_history": {
       "params": {
@@ -2968,13 +3216,16 @@
           "type": "string",
           "format": "date"
         }
-      }
+      },
+      "category": "异动、人气与情绪"
     },
     "anomaly_popularity_rank": {
-      "params": {}
+      "params": {},
+      "category": "异动、人气与情绪"
     },
     "anomaly_emotion_cycle": {
-      "params": {}
+      "params": {},
+      "category": "异动、人气与情绪"
     },
     "risk_share_reduction": {
       "params": {
@@ -2991,7 +3242,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "风险预警"
     },
     "risk_unlock": {
       "params": {
@@ -3008,7 +3260,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "风险预警"
     },
     "risk_monitor": {
       "params": {
@@ -3025,7 +3278,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "风险预警"
     },
     "risk_serious_alert": {
       "params": {
@@ -3042,7 +3296,8 @@
           "required": true,
           "type": "string"
         }
-      }
+      },
+      "category": "风险预警"
     }
   }
 }
