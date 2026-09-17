@@ -19,7 +19,8 @@ def slots(now):
     if '09:26' <= hm < '09:30': return [('09:26','pre'),('09:26','paper')]
     if '09:30' <= hm <= '11:30' or '13:00' <= hm <= '15:00':
         minute=now.minute-now.minute%5
-        return [(f'{now.hour:02d}:{minute:02d}','live'),(f'{now.hour:02d}:{minute:02d}','intraday')]
+        live=[(now.strftime('%H:%M'),'paper_live')] if '09:35'<=hm<='10:00' and (now.minute%2==1 or hm=='10:00') else []
+        return live+[(f'{now.hour:02d}:{minute:02d}','live'),(f'{now.hour:02d}:{minute:02d}','intraday')]
     due=[(t,s) for t,s,_ in SCHEDULE if s=='review' and t<=hm]
     return [(due[-1][0],stage) for stage in ('review','paper','intraday','history')] if due else []
 
@@ -78,5 +79,5 @@ async def status():
         if r['status']=='done' and any(x.get('status') not in ('ready','local') for x in r['results']):r['status']='partial'
         r.pop('results',None);runs.append(r)
     return {'owner':'systemd','schedule':[{'time':t,'stage':s,'name':n} for t,s,n in SCHEDULE],
-            'intraday':'交易日09:30–11:30、13:00–15:00，每5分钟行情与重点分时',
+            'intraday':'交易日每5分钟行情与重点分时；09:35–10:00优先冻结实时模拟确认，独立于盘后重建',
             'runs':runs,'note':'休市不采集；缺失明确展示。错过的竞价不以当前行情补造。'}

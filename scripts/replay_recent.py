@@ -1,5 +1,5 @@
 """Reconstruct last five completed sessions. Cached raw evidence stays in ignored data/."""
-import asyncio,json,sys,hashlib
+import asyncio,json,sys,hashlib,argparse
 from pathlib import Path
 from datetime import datetime
 from collections import Counter
@@ -11,6 +11,7 @@ from app.liangmai.client import LiangmaiClient
 from app.config import get_settings
 from app.liangmai.parsing import records,source_date,dragon_records
 ROOT=Path(__file__).resolve().parents[1]/'data/research';CACHE=ROOT/'recent_evidence';OUT=ROOT/'recent_replay.json'
+OPTIONS=None
 async def main():
  ROOT.mkdir(parents=True,exist_ok=True);CACHE.mkdir(exist_ok=True)
  client=LiangmaiClient(get_settings().model_copy(update={'liangmai_max_attempts':1,'liangmai_safe_rate':45}));await client.connect()
@@ -28,19 +29,25 @@ async def main():
   print(api,params,r.get('ok'),flush=True);return r.get('data') if r.get('ok') else None
  try:
   today=datetime.now(SH).date().isoformat();cal=await call('basic_trade_calendar',{'year':today[:4]}) or []
-  sessions=sorted({d for x in cal if (d:=source_date(x)) and d<today});days=sessions[-5:];asof=sessions[-1];report.update(asof=asof,dates=days)
+  sessions=sorted({d for x in cal if (d:=source_date(x)) and d<today});days=sessions[-(OPTIONS.sessions if OPTIONS else 5):];asof=sessions[-1];report.update(asof=asof,dates=days)
   for day in days:
-   prev=sessions[sessions.index(day)-1];hot=set();sources=[]
+   prev=sessions[sessions.index(day)-1];hot=set();sources=[];historical={}
+   report['universe']=OPTIONS.universe if OPTIONS else 'hot'
    for api in ('stockpool_limit_up','stockpool_strong','lhb_daily'):
     data=await call(api,{'date' if api=='lhb_daily' else 'trade_date':prev});rs=dragon_records(data) if api=='lhb_daily' else records(data)
     dates={source_date(r.get('endDate') or r.get('time') or r.get('trade_date')) for r in rs}-{None}
     mismatch=bool(dates and dates!={prev})
     if not mismatch:hot.update(code_of(r) for r in rs if code_of(r))
+    historical[api]={'status':'error' if data is None or mismatch else 'ready','payload':data}
     sources.append({'api':api,'date':prev,'count':len(rs),'status':'error' if data is None else 'mismatch' if mismatch else 'dated' if dates=={prev} else 'date_parameter_only'})
    auction=records(await call('auction_morning_grab_amount',{'tradeDate':day,'period':'0','type':'1'}))
+   if OPTIONS and OPTIONS.universe=='close':
+    from app.services.research import preparation_rows
+    from app.services.paper_observer import close_picks
+    selected=close_picks(preparation_rows(historical));hot={r['code'] for r in selected}
    picks=choose_candidates(auction,day,hot)
    if any(s['status'] in ('error','mismatch') for s in sources):picks=[]
-   report['days'].append({'date':day,'previous_date':prev,'sources':sources,'auction_rows':len(auction),'picked':len(picks),'codes':[r['code'] for r in picks]});save()
+   report['days'].append({'date':day,'previous_date':prev,'sources':sources,'auction_rows':len(auction),'picked':len(picks),'previous_pool_size':len(hot),'codes':[r['code'] for r in picks]});save()
    for row in picks:
     code=row['code'];compact=day.replace('-','');end=asof.replace('-','')
     minute=records(await call('kline_history',{'full_code':code,'interval':'5','cq':'n','st':compact+'093000','et':compact+'100000','lt':20}))
@@ -56,4 +63,7 @@ async def main():
   report['common_cohort']={'count':len(common),'means':{str(h):round(sum(next(p['net_pct'] for p in t['paths'] if p['hold']==h) for t in common)/len(common),3) if common else None for h in POLICY['holds']}}
   report.update(complete=True,comparisons=filter_comparisons(report['trades']),summary=summaries,entry_counts=dict(Counter(t['entry_status'] for t in report['trades'])));save()
  finally:await client.close()
-if __name__=='__main__':asyncio.run(main())
+if __name__=='__main__':
+ parser=argparse.ArgumentParser();parser.add_argument('--sessions',type=int,default=5,choices=range(1,31));parser.add_argument('--universe',choices=['hot','close'],default='hot');OPTIONS=parser.parse_args()
+ if OPTIONS.universe=='close':OUT=ROOT/'primary_replay.json'
+ asyncio.run(main())

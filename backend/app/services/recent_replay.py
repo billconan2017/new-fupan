@@ -24,12 +24,21 @@ def valid_bar(b):
     vals=[number(b.get(k)) for k in ('o','h','l','c')]
     return all(v is not None and v>0 for v in vals) and vals[2]<=min(vals[0],vals[3])<=max(vals[0],vals[3])<=vals[1] and number(b.get('sf'))==0 and (number(b.get('v')) or 0)>0
 
+def confirmation_gate(day, minute_bars):
+    """Same completed 09:35 bar gate for live observations and historical replay."""
+    signal=next((b for b in minute_bars if str(b.get('t'))==day+' 09:35:00'),None)
+    if not signal or not valid_bar(signal):
+        return {'state':'unknown','reason':'缺少有效09:35已完成五分钟K线'}
+    if number(signal['c'])<=number(signal['o']):
+        return {'state':'rejected','reason':'09:35收盘未站上首根开盘价，不触发入场','bar':signal}
+    return {'state':'confirmed','reason':'首根5分钟K线站上开盘价；等待09:40模拟参考与涨跌停核验','bar':signal}
+
 def evaluate(candidate,calendar,minute_bars,daily_bars,limits,asof,policy=None):
     p=policy or POLICY;day=candidate['signal_date'];result={**candidate,'entry_status':'not_entered','paths':[]}
     minutes={str(b.get('t')):b for b in minute_bars}
-    signal=minutes.get(day+' 09:35:00');entry=minutes.get(day+' 09:45:00')
-    if not signal or not valid_bar(signal):return result|{'entry_status':'unknown','reason':'缺少有效09:35已完成五分钟K线'}
-    if number(signal['c'])<=number(signal['o']):return result|{'reason':'09:35收盘未站上首根开盘价，不触发入场'}
+    gate=confirmation_gate(day,minute_bars);entry=minutes.get(day+' 09:45:00')
+    if gate['state']=='unknown':return result|{'entry_status':'unknown','reason':gate['reason']}
+    if gate['state']=='rejected':return result|{'reason':gate['reason']}
     if not entry or not valid_bar(entry):return result|{'entry_status':'unknown','reason':'缺少有效09:40开始的下一根五分钟K线'}
     daily={source_date(b.get('t')):b for b in daily_bars};stops={source_date(b.get('t')):b for b in limits}
     stop=stops.get(day,{})

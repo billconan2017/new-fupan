@@ -74,7 +74,14 @@ async def evaluate_saved(day):
     await wb.save_evidence(f'paper_{label}:{signal}:{code}',day,response)
     data[label]=records(response.get('data')) if response.get('ok') else []
    cache[key]=data
-  data=cache[key];result=evaluate(row['evidence']['row'],cal,data['minute'],data['daily'],data['limits'],day,policy=row['evidence']['policy'])
+  data=cache[key]
+  async with engine.connect() as c:
+   event=(await c.execute(text("SELECT payload FROM wb_paper_events WHERE signal_id=:id AND kind='entry'"),{'id':row['id']})).scalar()
+  prospective=event and event.get('state')=='simulated'
+  minute=event['minute_evidence'] if prospective else data['minute']
+  limits=data['limits']+(event.get('limits_evidence') or []) if prospective else data['limits']
+  result=evaluate(row['evidence']['row'],cal,minute,data['daily'],limits,day,policy=row['evidence']['policy'])
+  result['execution_origin']='prospective_confirmed' if prospective else 'eod_reconstruction'
   async with engine.begin() as c:
    await c.execute(text('UPDATE wb_paper_signals SET result=CAST(:r AS JSONB),evaluated_at=now() WHERE id=:id'),{'r':encoded(result),'id':row['id']})
   count+=1

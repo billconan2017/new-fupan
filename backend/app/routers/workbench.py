@@ -181,3 +181,14 @@ def legacy_replay():
     from app.services.research import REPORT_DIR
     p=REPORT_DIR/'legacy_replay.json'
     return json.loads(p.read_text()) if p.exists() else {'complete':False,'trades':[],'note':'旧策略历史研究尚未运行'}
+
+@router.get('/execution-desk')
+async def execution_desk(day:date):
+    from app.services.execution_desk import report
+    return await report(day.isoformat())
+
+@router.get('/primary-replay')
+def primary_replay():
+    from app.services.research import REPORT_DIR
+    p=REPORT_DIR/'primary_replay.json'
+    return json.loads(p.read_text()) if p.exists() else {'complete':False,'trades':[],'note':'主策略历史重建尚未完成'}
