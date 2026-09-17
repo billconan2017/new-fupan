@@ -12,7 +12,7 @@
         <div class="wb-header-actions"><label class="wb-auto"><input type="checkbox" v-model="autoSync"/>盘中60秒更新</label><input aria-label="研究日期" type="date" v-model="day" @change="reloadAll" :max="today"/><span class="wb-mode"><button :class="{active:mode==='short'}" @click="setMode('short')">短线</button><button :class="{active:mode==='trend'}" @click="setMode('trend')">趋势</button></span><button class="wb-button primary" :disabled="busy" @click="collect(phase)">{{ busy ? '采集中…' : '↻ 同步'+phaseName(phase)+'数据' }}</button></div>
       </header>
       <div v-if="['screen','review'].includes(page)" class="wb-phasebar"><button v-for="(p,i) in phases" :key="p.key" :class="{active:phase===p.key}" @click="setPhase(p.key)"><b>0{{ i+1 }}</b><span>{{ p.title }}<small>{{ p.subtitle }}</small></span><em v-if="i<2">→</em></button><div class="wb-phase-status"><span class="wb-dot"></span>{{ data?.previous_date ? '前一交易日 '+data.previous_date : '交易日历待准备' }}</div></div>
-      <div v-if="data?.entry_policy" class="wb-notice"><strong>{{ entryLabel }}</strong><span> · 默认短线/超短，买入后最早下一交易日卖出。</span></div>
+      <div v-if="data?.entry_policy && page!=='overview'" class="wb-notice"><strong>{{ entryLabel }}</strong><span> · 默认短线/超短，买入后最早下一交易日卖出。</span></div>
       <div v-if="message" class="wb-notice" role="status">{{ message }}<button @click="message=''">×</button></div>
       <div v-if="error" class="wb-notice error" role="alert">{{ error }} <button @click="reloadAll">重试</button></div>
       <div v-if="job && busy" class="wb-job"><span class="wb-spinner"></span><b>正在核对接口与写入数据</b><span>{{ job.progress }}/{{ job.total || '…' }}</span><progress :value="job.progress" :max="job.total || 1"/></div>
