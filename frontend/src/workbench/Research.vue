@@ -8,9 +8,9 @@
  <section class="wb-panel"><div class="wb-panel-title"><div><h3>资金关注与热点交集</h3><p>{{ preparation?.note }}</p></div><button class="wb-button primary" :disabled="busy" @click="$emit('collect','review')">补齐当日盘后证据</button></div>
  <div class="wb-tags"><span v-for="s in preparation?.sources || []" :key="s.api" :class="['wb-status','status-'+s.status]">{{ s.name }} · {{ status(s.status) }} · {{ s.rows }}条</span></div>
  <p class="wb-footnote">接口约9:26返回的竞价结果，只能用于竞价结束后的确认；不能假定按9:25开盘撮合价买入。当前榜单不能回填历史。17:10只是日线更新参考时间，仍需核对字段和源日期。</p>
- <input v-model="search" placeholder="搜索代码、名称或行业" aria-label="搜索次日备选"/>
- <div class="wb-table-scroll"><table class="wb-table"><thead><tr><th>标的</th><th>证据交集</th><th>热点方向</th><th>成交额 / 参考价</th><th>执行前检查</th><th>计划</th></tr></thead><tbody><tr v-for="r in candidates.slice(0,limit)" :key="r.code"><td><strong>{{ r.name }}</strong><small>{{ r.code }}</small></td><td><div class="wb-tags"><span v-for="reason in r.reasons" :key="reason">{{ reason }}</span></div><small>{{ r.overlap }}项交集；不是胜率</small></td><td>{{ r.industry }}<small>同方向候选 {{ r.industry_count }}只</small></td><td>{{ money(r.amount) }}<small>参考价 {{ r.price ?? '缺失' }}</small></td><td><small v-for="risk in r.risks" :key="risk">{{ risk }}</small></td><td><button class="wb-button small" :disabled="!preparation?.ready_for_decision" @click="freeze(r)">冻结备选</button></td></tr></tbody></table></div>
- <p v-if="!candidates.length" class="wb-empty">所选日期尚无候选证据，请采集盘后数据。不会借用其他日期替代。</p><button v-if="candidates.length>limit" class="wb-button" @click="limit+=30">显示更多（{{ Math.min(limit,candidates.length) }} / {{ candidates.length }}）</button>
+ <div class="wb-mode"><button :class="{active:!showAll}" @click="showAll=false">重点备选 {{ focused.length }} / 8</button><button :class="{active:showAll}" @click="showAll=true">全部候选 {{ preparation?.rows.length || 0 }}</button></div><p class="wb-footnote">默认最多8只，同一行业最多2只；至少两类热点证据、成交额≥1亿且参考价有效。未满足不凑数，明早仍需确认。</p><input v-model="search" placeholder="搜索代码、名称或行业" aria-label="搜索次日备选"/>
+ <div class="wb-table-scroll"><table class="wb-table"><thead><tr><th>标的</th><th>证据交集</th><th>热点方向</th><th>成交额 / 参考价</th><th>执行前检查</th><th>计划</th></tr></thead><tbody><tr v-for="r in candidates.slice(0,limit)" :key="r.code"><td><button class="wb-text-button" @click="$emit('stock',r.code)"><strong>{{ r.name }} ↗</strong></button><small>{{ r.code }} · 查看分时</small></td><td><div class="wb-tags"><span v-for="reason in r.reasons" :key="reason">{{ reason }}</span></div><small>{{ r.overlap }}项交集；不是胜率</small></td><td>{{ r.industry }}<small>同方向候选 {{ r.industry_count }}只</small></td><td>{{ money(r.amount) }}<small>参考价 {{ r.price ?? '缺失' }}</small></td><td><small v-for="risk in r.risks" :key="risk">{{ risk }}</small></td><td><button class="wb-button small" :disabled="!preparation?.ready_for_decision" @click="freeze(r)">冻结备选</button></td></tr></tbody></table></div>
+ <p v-if="!candidates.length" class="wb-empty">当前没有符合重点条件的备选，可查看全部候选或补齐证据；不会凑数。</p><button v-if="candidates.length>limit" class="wb-button" @click="limit+=30">显示更多（{{ Math.min(limit,candidates.length) }} / {{ candidates.length }}）</button>
  <p class="wb-footnote">历史日期点击冻结，只记录“现在重建的历史候选”，不能冒充当时推荐。当前版本没有真实委托或成交记录。</p></section>
  </template>
  <LegacyResearch v-if="tab==='legacy'" :day="day"/>
@@ -27,14 +27,17 @@
 <script setup>
 import {ref,computed,watch} from 'vue'
 import axios from 'axios'
+import {preparationFocus} from './selection.js'
 import RecentReplay from './RecentReplay.vue'
 import CapabilityAudit from './CapabilityAudit.vue'
 import LegacyResearch from './LegacyResearch.vue'
-const props=defineProps({day:String,mode:String,busy:Boolean});defineEmits(['collect'])
+const props=defineProps({day:String,mode:String,busy:Boolean});defineEmits(['collect','stock'])
 const tab=ref('prepare'),preparation=ref(null),audit=ref(null),study=ref(null),error=ref(''),loading=ref(false),message=ref(''),search=ref(''),limit=ref(30),auditFilter=ref('all'),auditCategory=ref('');let seq=0
 const status=s=>({ready:'返回数据',empty:'返回为空',error:'请求失败',untested:'未实测',local:'本地降级'})[s]||s
 const money=n=>n==null?'缺失':(n/1e8).toFixed(2)+'亿'
-const candidates=computed(()=>(preparation.value?.rows||[]).filter(r=>`${r.code} ${r.name} ${r.industry}`.includes(search.value.trim())))
+const showAll=ref(false)
+const focused=computed(()=>preparationFocus(preparation.value?.rows||[]))
+const candidates=computed(()=>(showAll.value?preparation.value?.rows||[]:focused.value).filter(r=>`${r.code} ${r.name} ${r.industry}`.includes(search.value.trim())))
 const audited=computed(()=>(audit.value?.items||[]).filter(r=>(auditFilter.value==='all'||r.status===auditFilter.value)&&(!auditCategory.value||r.category===auditCategory.value)))
 async function load(){const id=++seq;loading.value=true;error.value='';try{const results=await Promise.all([axios.get('/api/workbench/preparation',{params:{day:props.day}}),axios.get('/api/workbench/interface-audit'),axios.get('/api/workbench/history-study')]);if(id!==seq)return;[preparation.value,audit.value,study.value]=results.map(r=>r.data)}catch{if(id===seq)error.value='研究数据读取失败，请刷新或确认服务状态。'}finally{if(id===seq)loading.value=false}}
 async function freeze(r){try{const res=await axios.post('/api/workbench/preparation/plans',{day:props.day,code:r.code,mode:props.mode,phase:'review',note:'盘后候选；次日竞价及开盘成交条件待确认'});message.value=res.data.message}catch(e){message.value=e.response?.data?.detail || '冻结失败，请重新核对数据'}}

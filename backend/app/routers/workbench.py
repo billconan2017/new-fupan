@@ -17,14 +17,14 @@ async def screen(day: date | None=None,phase: Literal['pre','live','review']='li
 class Collection(BaseModel):
     model_config=ConfigDict(extra='forbid')
     day: date
-    stage: Literal['pre','live','review','history','quote','execution','watchquote']
+    stage: Literal['pre','live','review','history','quote','execution','watchquote','intraday']
     codes: list[str]=Field(default_factory=list,max_length=20)
 
 @router.post('/collect')
 async def collect(body: Collection):
     if body.day>datetime.now(SH).date():raise HTTPException(422,'不能采集未来日期')
     if body.stage in ('quote','watchquote') and body.day!=datetime.now(SH).date():raise HTTPException(422,'行情只支持当前日期')
-    if body.stage in ('history','execution','watchquote') and (not body.codes or any(len(c)!=6 or not c.isdigit() for c in body.codes)):
+    if body.stage in ('history','execution','watchquote','intraday') and (not body.codes or any(len(c)!=6 or not c.isdigit() for c in body.codes)):
         raise HTTPException(422,'请选择1至20只六位股票代码')
     return await service.start_job(body.day.isoformat(),body.stage,list(dict.fromkeys(body.codes)))
 
@@ -85,6 +85,22 @@ async def preparation(day:date):
     if day>datetime.now(SH).date():raise HTTPException(422,'不能使用未来盘后数据')
     from app.services.research import preparation as build_preparation
     return await build_preparation(day.isoformat())
+
+@router.get('/intraday/{code}')
+async def intraday(code:str,day:date):
+    if len(code)!=6 or not code.isdigit():raise HTTPException(422,'股票代码无效')
+    from app.services.intraday_chart import chart_data
+    ev=await service.evidence(day.isoformat())
+    full=ev.get('intraday_5:'+code,{})
+    early=ev.get('minute_5:'+code,{})
+    chosen=full if full.get('status') in ('ready','local') else early
+    from app.liangmai.parsing import snapshot_records,source_date
+    quote=ev.get('market_quote:'+code,{})
+    if quote.get('status') not in ('ready','local'):quote={}
+    quotes=snapshot_records(quote.get('payload'))+snapshot_records(ev.get('market_snapshot_all',{}).get('payload'))
+    prior=next((r.get('yc') for r in quotes if r.get('code')==code and source_date(r.get('t'))==day.isoformat() and r.get('yc')),None)
+    result=chart_data(day.isoformat(),chosen.get('payload'),previous_close=prior)
+    return {**result,'status':chosen.get('status','untested'),'fetched_at':chosen.get('fetched_at'),'scope':'day' if chosen is full else 'early'}
 
 @router.get('/interface-audit')
 async def interface_audit():

@@ -222,6 +222,11 @@ async def collect(job,day,stage,codes):
                 previous=max((source_date(d) for d in cal if source_date(d) and source_date(d)<day),default=None)
                 if not previous:raise ValueError('请先采集交易日历')
                 calls=[('kline_history:'+code,'kline_history',{'full_code':code,'interval':'d','cq':'f','lt':100,'et':previous.replace('-','')}) for code in codes]
+            elif stage=='intraday':
+                end=day.replace('-','')+'150000'
+                if day==datetime.now(SH).date().isoformat():
+                    end=min(end,datetime.now(SH).strftime('%Y%m%d%H%M%S'))
+                calls=[('intraday_5:'+code,'kline_history',{'full_code':code,'interval':'5','cq':'n','st':day.replace('-','')+'093000','et':end,'lt':60}) for code in codes]
             elif stage=='watchquote':
                 calls=[('market_quote:'+code,'market_quote',{'ts_code':code}) for code in codes]
             elif stage=='quote':
