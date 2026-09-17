@@ -85,3 +85,58 @@ async def test_cockpit_date_boundaries_and_missing_quotes():
         assert (await generate_review_snapshot('2020-01-02'))['report']['quality']['status']=='partial'
     finally:
         await engine.dispose()
+
+
+async def test_workbench_frozen_plans_and_real_names():
+    from app.services.workbench import save_evidence,build
+    from app.main import app
+    day='2025-03-12'
+    def ok(data):return {'ok':True,'data':data,'msg':'ok'}
+    try:
+        await save_evidence('basic_stock_list',day,ok([{'dm':'000001.SZ','mc':'平安银行'}]))
+        await save_evidence('basic_trade_calendar',day,ok(['20250311','20250312']))
+        await save_evidence('market_snapshot_all',day,ok([{'dm':'000001','p':10,'pc':2,'o':9,'cje':5e8,'lb':3,'t':day+' 10:00:00'}, {'dm':'500001','p':1,'t':day+' 10:00:00'}]))
+        await save_evidence('auction_morning_grab_amount',day,ok([{'code':'000001','name':'平安银行','time':day,'qccje':5e7,'qczf':5,'qcwtje':1e8}]))
+        await save_evidence('stockpool_limit_up',day,ok([{'code':'000001','lbc':9}]))
+        await save_evidence('stockpool_limit_up','2025-03-11',ok([{'code':'000001','lbc':2}]))
+        pre=await build(day,'pre','short')
+        assert pre['rows'][0]['price'] is None and pre['rows'][0]['consecutive']==2
+        assert pre['context_date']=='2025-03-11'
+        r=await build(day)
+        assert r['total']==1 and r['rows'][0]['name']=='平安银行'
+        assert r['rows'][0]['score']==85 and r['previous_date']=='2025-03-11'
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app),base_url='http://test') as c:
+            plan={'day':day,'code':'000001','mode':'short','phase':'live','note':'original'}
+            assert (await c.post('/api/workbench/plans',json=plan)).json()['created']
+            plan['note']='overwrite attempt'
+            assert not (await c.post('/api/workbench/plans',json=plan)).json()['created']
+            plans=(await c.get('/api/workbench/plans',params={'day':day})).json()['items']
+            assert plans[0]['note']=='original' and plans[0]['reference_price']==10
+            assert plans[0]['change_since_saved']==0
+            bad=await c.post('/api/workbench/collect',json={'day':day,'stage':'history','codes':['../../secret']})
+            assert bad.status_code==422
+            # Failed refresh does not silently reuse the previous good sample.
+            await save_evidence('market_snapshot_all',day,{'ok':False,'data':None,'msg':'失败'})
+            assert (await build(day))['total']==0
+            from app.services.workbench import local_fallback
+            local=await local_fallback('stockpool_limit_up',day,{'ok':False})
+            assert local['_local'] and local['ok']
+            result=await save_evidence('stockpool_limit_up',day,local)
+            assert result['status']=='local'
+            rejected=await c.post('/api/workbench/collect',json={'day':day,'stage':'quote'})
+            assert rejected.status_code==422
+    finally:
+        await engine.dispose()
+
+
+async def test_workbench_recovers_interrupted_jobs():
+    from app.services.workbench import recover_jobs
+    try:
+        async with engine.begin() as c:
+            await c.execute(text("INSERT INTO wb_jobs(id,status,stage,trade_date,total) VALUES ('interrupted-test','running','live','2026-09-17',10)"))
+        await recover_jobs()
+        async with engine.connect() as c:
+            row=(await c.execute(text("SELECT status,results,finished_at FROM wb_jobs WHERE id='interrupted-test'"))).first()
+            assert row[0]=='failed' and row[1][-1]['status']=='error' and row[2] is not None
+    finally:
+        await engine.dispose()

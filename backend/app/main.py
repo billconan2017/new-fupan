@@ -16,6 +16,8 @@ async def lifespan(app: FastAPI):
     try:
         from app.database import init_db
         await init_db()
+        from app.services.workbench import recover_jobs
+        await recover_jobs()
         log.info("PostgreSQL connected")
     except Exception as e:
         log.warning(f"PostgreSQL unavailable: {e}")
@@ -79,7 +81,8 @@ app.add_middleware(
 )
 
 app.include_router(health.router)
-from app.routers import data_quality, cockpit
+from app.routers import data_quality, cockpit, workbench
+app.include_router(workbench.router)
 app.include_router(cockpit.router)
 app.include_router(data_quality.router)
 app.include_router(snapshot.router)
